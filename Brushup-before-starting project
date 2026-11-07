@@ -1,0 +1,197 @@
+AI SRE COPILOT - MODERN AGENTIC AI ARCHITECTURE GUIDE
+=================================================
+
+OVERVIEW
+--------
+This guide summarizes the evolution from traditional RAG/LangChain systems to modern multi-agent AI systems used for SRE and enterprise automation.
+
+OLD VS NEW STACK
+----------------
+RAG                    -> Agent Memory + Tool Calling + Reasoning
+LangChain              -> CrewAI / AutoGen / Google ADK / OpenAI Agents SDK
+LangGraph              -> Temporal / CrewAI Flows / AutoGen Workflows
+MCP                    -> A2A (Agent-to-Agent) + OpenAI Agents SDK
+ChromaDB               -> Qdrant / Pinecone / Milvus
+Ollama                 -> vLLM / TGI
+Chatbot                -> Autonomous Agent Systems
+
+AI SRE TEAM WORKFLOW
+--------------------
+Prometheus Alert
+      |
+      v
+Temporal Workflow
+      |
+      v
+Investigator Agent
+      |
+      v
+Planner Agent
+      |
+      v
+Executor Agent
+      |
+      v
+Report + Notification
+
+1. INVESTIGATOR AGENT
+---------------------
+Role: SRE Investigator
+Goal: Find Root Cause
+Tools:
+- kubectl
+- Prometheus
+- Grafana
+- Application Logs
+- Qdrant Memory
+
+Responsibilities:
+- Check Kubernetes pods
+- Analyze logs
+- Find root cause
+- Search historical incidents
+
+Example:
+kubectl get pods
+kubectl describe pod payment-service
+kubectl logs payment-service
+
+Output:
+{
+  "cause": "OOM",
+  "service": "payment-service"
+}
+
+2. PLANNER AGENT
+----------------
+Role: SRE Planner
+Goal: Create Fix Plan
+Tools:
+- GitHub
+- Terraform
+- Internal Runbooks
+- Reasoning Engine
+
+Rules:
+- OOM -> Increase Memory
+- Bad Image -> Rollback
+- Config Issue -> Restore Previous Config
+
+Example Output:
+{
+  "plan": "Increase memory from 512Mi to 1Gi",
+  "risk": "LOW"
+}
+
+3. EXECUTOR AGENT
+-----------------
+Role: SRE Executor
+Goal: Apply Fix
+Tools:
+- kubectl
+- ArgoCD
+- Slack
+- GitHub Actions
+
+Example:
+kubectl rollout restart deployment payment-service
+
+Verification:
+kubectl get pods
+
+Expected Result:
+Running
+
+MEMORY ARCHITECTURE
+-------------------
+Redis (Short-Term Memory)
+- Last 10 incidents
+- Current conversations
+- Session context
+
+Qdrant (Long-Term Memory)
+- Historical incidents
+- Similarity search
+- Incident embeddings
+
+Note:
+Qdrant can be used for both RAG and Memory, depending on architecture.
+
+TEMPORAL WORKFLOW
+-----------------
+Purpose:
+- Workflow orchestration
+- Retry failed steps
+- Resume after crash
+- Long-running workflows
+
+Flow:
+Investigator -> Planner -> Executor -> Report
+
+OBSERVABILITY
+-------------
+Prometheus     - Metrics
+Grafana        - Dashboards
+Langfuse       - Agent traces
+Arize Phoenix  - Hallucination analysis
+OpenTelemetry  - Distributed tracing
+
+EVALUATION
+----------
+DeepEval   - AI testing
+RAGAS      - Faithfulness metrics
+TruLens    - Quality evaluation
+PyTest     - Unit testing
+
+DEPLOYMENT STACK
+----------------
+Frontend (React)
+      |
+FastAPI
+      |
+Temporal
+      |
+CrewAI / AutoGen
+      |
+Redis + Qdrant
+      |
+Kubernetes
+      |
+ArgoCD
+
+LEARNING ROADMAP
+----------------
+Already Completed:
+- FastAPI
+- MCP
+- PostgreSQL
+- Vector Databases
+- GraphRAG
+
+Next Technologies:
+1. CrewAI
+2. Redis
+3. Qdrant
+4. Temporal
+5. Kubernetes
+6. Langfuse
+7. DeepEval
+8. AutoGen
+9. OpenAI Agents SDK
+10. vLLM
+
+INTERVIEW ANSWER
+----------------
+I built an Autonomous AI SRE Copilot using CrewAI, Temporal, Redis, Qdrant, FastAPI, Kubernetes, and ArgoCD. The platform uses Investigator, Planner, and Executor agents to automate incident investigation and remediation. Redis provides short-term memory, Qdrant stores historical incidents, Temporal orchestrates workflows, and Langfuse plus DeepEval provide observability and evaluation.
+
+KEY TAKEAWAY
+------------
+The industry trend is:
+
+Chatbot
+  -> RAG
+      -> Agentic RAG
+          -> Multi-Agent Systems
+              -> Autonomous AI Systems
+
+New tools complement existing technologies rather than fully replacing them.
