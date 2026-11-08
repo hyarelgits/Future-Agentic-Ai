@@ -1,0 +1,6140 @@
+PHASE 1 - PREPARE UBUNTU
+
+Check system.
+
+# show Ubuntu version
+lsb_release -a
+
+# show logged in user
+whoami
+
+# show current directory
+pwd
+
+# show memory
+free -h
+
+# show disk usage
+df -h
+
+
+=============
+
+
+
+PHASE 2 - INSTALL PYTHON
+
+# refresh package list
+sudo apt update
+
+# update installed packages
+sudo apt upgrade -y
+
+# install python
+sudo apt install -y \
+python3 \
+python3-pip \
+python3-venv \
+python3-dev
+
+
+# check python version
+python3 --version
+
+# check pip version
+pip3 --version
+
+===============
+
+
+PHASE 3 - INSTALL TOOLS
+
+
+
+# install development tools
+sudo apt install -y \
+git \
+curl \
+wget \
+unzip \
+net-tools \
+htop \
+build-essential
+
+===
+
+
+git
+ ↓
+clone project
+
+curl
+ ↓
+API testing
+
+wget
+ ↓
+download files
+
+net-tools
+ ↓
+network utilities
+
+htop
+ ↓
+CPU monitoring
+
+
+
+===============
+
+
+PHASE 4 - CREATE PROJECT
+
+
+# create project
+mkdir future-ai-sre-copilot
+
+# enter project
+cd future-ai-sre-copilot
+
+
+
+PHASE 5 - CREATE VIRTUAL ENVIRONMENT
+
+Exactly same as your MCP project.
+
+# create virtual environment
+python3 -m venv venv
+
+
+
+# activate environment
+source venv/bin/activate
+
+
+=======================
+
+
+
+PHASE 6 - INSTALL PACKAGES
+
+
+touch requirements.txt
+
+
+fastapi
+uvicorn
+pydantic
+
+redis
+qdrant-client
+
+crewai
+crewai-tools
+
+requests
+httpx
+
+pytest
+
+temporalio
+
+
+
+
+================
+
+
+pip install -r requirements.txt
+
+-----------------
+
+
+PHASE 7 - CREATE PROJECT STRUCTURE
+
+
+# frontend folder
+mkdir frontend
+
+# agent folder
+mkdir agents
+
+# memory folder
+mkdir memory
+
+# workflow folder
+mkdir workflows
+
+# evaluation folder
+mkdir evaluation
+
+# kubernetes folder
+mkdir k8s
+
+
+
+
+
+
+==============
+
+
+Create files.
+
+
+touch main.py
+
+touch agents/investigator_agent.py
+touch agents/planner_agent.py
+touch agents/executor_agent.py
+
+touch memory/redis_memory.py
+touch memory/qdrant_memory.py
+
+touch workflows/temporal_workflow.py
+
+
+==============
+
+
+PHASE 8 - FASTAPI
+
+main.py
+
+Every line commented.
+
+
+
+# import FastAPI framework
+from fastapi import FastAPI
+
+# create FastAPI application object
+app = FastAPI()
+
+# create GET API endpoint
+@app.get("/")
+
+# function runs when route is called
+def home():
+
+    # return JSON response
+    return {
+        "message": "SRE Copilot Running"
+    }
+
+
+=============
+
+
+Run.
+
+Shell
+# start FastAPI server
+uvicorn main:app --reload --port 8002
+
+
+
+main
+ ↓
+main.py
+
+app
+ ↓
+FastAPI object
+
+reload
+ ↓
+auto restart
+
+8002
+ ↓
+port
+
+
+
+========================
+
+
+http://localhost:8002
+
+
+==============
+
+
+PHASE 9 - REDIS MEMORY
+
+Install.
+
+
+# install Redis
+sudo apt install redis-server -y
+
+
+
+# start Redis service
+sudo systemctl start redis-server
+
+
+
+# test redis
+redis-cli ping
+
+
+Expected:
+
+Plain Text
+PONG
+
+
+memory/redis_memory.py
+
+
+# import redis library
+import redis
+
+# create Redis connection
+r = redis.Redis(
+
+    # Redis host
+    host="localhost",
+
+    # Redis port
+    port=6379,
+
+    # auto convert bytes to string
+    decode_responses=True
+)
+
+# save chat message
+def save_chat(user,message):
+
+    # push message into Redis list
+    r.lpush(
+
+        # key name
+        f"chat:{user}",
+
+        # message value
+        message
+    )
+
+# get messages
+def get_chat(user):
+
+    # return last ten chats
+    return r.lrange(
+
+        # redis key
+        f"chat:{user}",
+
+        # start position
+        0,
+
+        # end position
+        10
+    )
+
+
+
+=================
+
+
+
+Purpose:
+
+
+Temporary memory
+
+Last 10 incidents
+
+
+
+============
+
+
+PHASE 10 - QDRANT
+
+Install Docker first.
+
+
+sudo apt install docker.io -y
+
+
+sudo systemctl start docker
+
+
+
+Run Qdrant.
+
+
+docker run \
+-p 6333:6333 \
+qdrant/qdrant
+
+
+
+memory/qdrant_memory.py
+
+# import Qdrant client
+from qdrant_client import QdrantClient
+
+# create Qdrant connection
+client = QdrantClient(
+
+    # qdrant server host
+    host="localhost",
+
+    # qdrant server port
+    port=6333
+)
+
+# create collection
+def create_collection():
+
+    # print confirmation
+    print("Collection created")
+
+
+
+================
+
+
+
+Purpose:
+
+Plain Text
+Store historical incidents
+ 
+Long term memory
+
+
+
+================
+
+
+PHASE 11 - INVESTIGATOR AGENT
+
+agents/investigator_agent.py
+
+
+# investigate incident
+def investigate(incident):
+
+    # check incident text
+    if "CrashLoopBackOff" in incident:
+
+        # root cause discovered
+        return {
+
+            # root cause
+            "cause": "OOM",
+
+            # recommendation
+            "hint": "Check memory usage"
+        }
+
+    # unknown incident
+    return {
+
+        # cause not found
+        "cause": "Unknown",
+
+        # generic recommendation
+        "hint": "Check logs"
+    }
+
+
+==============
+
+
+Purpose:
+
+Plain Text
+Alert
+↓
+Root Cause
+
+
+=============
+
+
+PHASE 12 - PLANNER AGENT
+
+agents/planner_agent.py
+
+
+
+# create plan
+def make_plan(cause):
+
+    # check cause
+    if cause == "OOM":
+
+        # return fix plan
+        return {
+
+            # action plan
+            "plan": "Increase Memory",
+
+            # risk level
+            "risk": "LOW"
+        }
+
+    # unknown issue
+    return {
+
+        # action
+        "plan": "Escalate",
+
+        # high risk
+        "risk": "HIGH"
+    }
+
+
+
+==============
+
+
+Purpose:
+
+Plain Text
+Cause
+↓
+Plan
+
+
+===========
+
+
+
+PHASE 13 - EXECUTOR AGENT
+
+agents/executor_agent.py
+
+
+
+# execute remediation plan
+def execute_plan(plan):
+
+    # check risk level
+    if plan["risk"] == "HIGH":
+
+        # escalate to human
+        return {
+
+            # result status
+            "status": "ESCALATED"
+        }
+
+    # execute fix
+    return {
+
+        # success status
+        "status": "FIXED"
+    }
+
+
+
+============
+
+
+
+Purpose:
+
+Plain Text
+Plan
+↓
+Action
+
+=================
+
+
+PHASE 14 - CREWAI
+
+Simple Agent.
+
+
+
+# import CrewAI agent
+from crewai import Agent
+
+# create investigator agent
+investigator = Agent(
+
+    # agent role
+    role="SRE Investigator",
+
+    # agent objective
+    goal="Find root cause",
+
+    # background information
+    backstory="Expert SRE engineer",
+
+    # print reasoning
+    verbose=True
+)
+
+
+
+============
+
+
+Meaning:
+
+
+Role
+ ↓
+Who are you
+
+Goal
+ ↓
+What should you do
+
+Backstory
+ ↓
+Additional knowledge
+
+Verbose
+ ↓
+Show reasoning
+
+
+
+============
+
+
+PHASE 15 - TEMPORAL
+
+
+Plain Text
+Orchestrator
+
+
+Without Temporal:
+
+Investigator
+↓
+Server crash
+↓
+Workflow lost
+
+
+
+With Temporal:
+
+Investigator
+↓
+Planner
+↓
+Executor
+
+Always resumes.
+
+
+================
+
+
+workflows/temporal_workflow.py
+
+
+# investigator function
+from agents.investigator_agent import investigate
+
+# planner function
+from agents.planner_agent import make_plan
+
+# executor function
+from agents.executor_agent import execute_plan
+
+# main workflow
+def run_sre_workflow(incident):
+
+    # find root cause
+    finding = investigate(incident)
+
+    # create action plan
+    plan = make_plan(finding["cause"])
+
+    # execute fix
+    result = execute_plan(plan)
+
+    # return complete output
+    return {
+
+        # investigation result
+        "finding": finding,
+
+        # generated plan
+        "plan": plan,
+
+        # final execution result
+        "result": result
+    }
+
+
+==================
+
+
+PHASE 16 - FRONTEND
+
+frontend/index.html
+
+HTML
+<!-- page title -->
+<h1>SRE Copilot</h1>
+ 
+<!-- user input -->
+<input id="incident">
+ 
+<!-- button -->
+<button onclick="fixIssue()">
+ 
+Run
+ 
+</button>
+ 
+<!-- result area -->
+<pre id="result"></pre>
+
+
+==============
+
+
+frontend/app.js
+
+
+// function executes on button click
+async function fixIssue() {
+
+    // get incident text
+    const incident =
+        document.getElementById("incident").value;
+
+    // call FastAPI
+    const response =
+        await fetch(
+            "http://localhost:8002/fix-incident",
+            {
+
+                // HTTP method
+                method: "POST",
+
+                // JSON content
+                headers: {
+                    "Content-Type":"application/json"
+                },
+
+                // request body
+                body: JSON.stringify({
+                    incident: incident
+                })
+            }
+        );
+
+    // convert json
+    const data =
+        await response.json();
+
+    // show output
+    document.getElementById("result").innerText =
+        JSON.stringify(data,null,2);
+}
+
+==================
+
+
+
+PHASE 17 - DOCKER
+
+Dockerfile
+
+
+
+# base image
+FROM python:3.11
+
+# working directory
+WORKDIR /app
+
+# copy requirements file
+COPY requirements.txt .
+
+# install packages
+RUN pip install -r requirements.txt
+
+# copy source code
+COPY . .
+
+# expose FastAPI port
+EXPOSE 8002
+
+# start application
+CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8002"]
+
+
+
+===============
+
+
+
+Build.
+
+Shell
+# build image
+docker build -t sre-copilot .
+
+Run.
+
+Shell
+# run container
+docker run -p 8002:8002 sre-copilot
+
+
+=======================
+
+
+
+PHASE 18 - KUBERNETES
+
+deployment.yaml
+
+
+# Kubernetes API version
+apiVersion: apps/v1
+
+# deployment resource
+kind: Deployment
+
+# deployment metadata
+metadata:
+
+  # deployment name
+  name: sre-copilot
+
+# deployment specification
+spec:
+
+  # pod count
+  replicas: 1
+
+  # pod selector
+  selector:
+
+    matchLabels:
+
+      app: sre-copilot
+
+  # pod template
+  template:
+
+    metadata:
+
+      labels:
+
+        app: sre-copilot
+
+    spec:
+
+      containers:
+
+      - name: sre-copilot
+
+        image: sre-copilot:latest
+
+        ports:
+
+        - containerPort: 8002
+
+
+
+===============
+
+
+kubectl apply -f deployment.yaml
+
+==============
+
+
+COMPLETE FLOW TO MEMORIZE
+
+
+Ubuntu
+ ↓
+Python
+ ↓
+Virtual Environment
+ ↓
+FastAPI
+ ↓
+Redis
+ ↓
+Qdrant
+ ↓
+Investigator
+ ↓
+Planner
+ ↓
+Executor
+ ↓
+CrewAI
+ ↓
+Temporal
+ ↓
+Frontend
+ ↓
+Docker
+ ↓
+Docker Compose
+ ↓
+Kubernetes
+ ↓
+Helm
+ ↓
+ArgoCD
+ ↓
+Langfuse
+ ↓
+DeepEval
+
+
+===============
+
+
+
+
+This is the exact order I would recommend you learn and implement the project. Once you understand these phases, we can go one level deeper and create a 100% production-ready version where every file is fully commented line-by-line, including docker-compose.yml, Temporal setup, CrewAI configuration, Helm charts, GitHub Actions CI/CD, Langfuse, DeepEval, and ArgoCD with enterprise-level explanations.
+
+
+
+
+
+==========
+
+
+
+
+
+
+
+Helm Explained From Scratch
+
+Since you're learning the complete AI SRE project, Helm comes after Kubernetes.
+
+
+
+Python
+ ↓
+FastAPI
+ ↓
+Docker
+ ↓
+Kubernetes
+ ↓
+Helm
+
+
+What Problem Does Helm Solve?
+
+Without Helm:
+
+Suppose you have 20 Kubernetes YAML files.
+
+====
+
+
+deployment.yaml
+
+service.yaml
+
+configmap.yaml
+
+secret.yaml
+
+ingress.yaml
+
+hpa.yaml
+
+job.yaml
+
+======
+
+To deploy:
+
+kubectl apply -f deployment.yaml
+
+kubectl apply -f service.yaml
+
+kubectl apply -f ingress.yaml
+
+kubectl apply -f configmap.yaml
+
+Many commands.
+
+Difficult to manage.
+============
+
+
+Helm Solution
+
+Helm is:
+
+
+Package Manager for Kubernetes
+
+
+
+pip
+ ↓
+Python
+
+apt
+ ↓
+Ubuntu
+
+npm
+ ↓
+NodeJS
+
+Helm
+ ↓
+Kubernetes
+
+=============
+
+
+Real Example
+
+Python:
+
+Shell
+pip install fastapi
+
+Kubernetes:
+
+Shell
+helm install sre-copilot
+
+One command.
+
+Everything deployed.
+
+============
+
+
+Helm Architecture
+Plain Text
+
+
+Helm Chart
+      │
+      ▼
+Deployment
+Service
+ConfigMap
+Secrets
+Ingress
+Autoscaling
+
+Helm packages all YAML files together.
+==============
+
+
+Install Helm
+
+Ubuntu:
+
+
+# download installer script
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+
+
+Verify:
+
+Shell
+helm version
+
+Output:
+
+Plain Text
+version.BuildInfo
+
+
+=====================
+
+
+
+Create Helm Chart
+
+Inside project.
+
+Shell
+
+
+mkdir helm-chart
+
+cd helm-chart
+
+
+
+Create chart.
+
+helm create sre-copilot
+
+
+Generated structure:
+
+
+sre-copilot/
+
+├── Chart.yaml
+
+├── values.yaml
+
+├── charts/
+
+└── templates/
+
+    ├── deployment.yaml
+
+    ├── service.yaml
+
+    ├── ingress.yaml
+
+    └── serviceaccount.yaml
+
+=============
+
+
+Chart.yaml
+
+
+Purpose:
+
+
+Application metadata
+
+
+
+# helm api version
+apiVersion: v2
+
+# chart name
+name: sre-copilot
+
+# chart version
+version: 0.1.0
+
+# application version
+appVersion: "1.0"
+
+# chart description
+description: AI SRE Copilot
+
+
+
+============
+
+
+values.yaml
+
+Purpose:
+
+
+Store configurable values
+
+
+replicaCount: 2
+# create two pods
+
+image:
+  repository: sre-copilot
+  # docker image
+
+  tag: latest
+  # docker tag
+
+service:
+  type: NodePort
+  # expose outside cluster
+
+  port: 8002
+  # application port
+
+
+=============
+
+
+
+How Helm Uses Values
+
+Template:
+
+
+replicas: {{ .Values.replicaCount }}
+
+
+Helm replaces.
+
+YAML
+replicas: 2
+
+
+automatically.
+
+
+===============
+
+
+Deployment Template
+
+
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: sre-copilot
+
+spec:
+
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+
+    matchLabels:
+
+      app: sre-copilot
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: sre-copilot
+
+    spec:
+
+      containers:
+
+      - name: sre-copilot
+
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+
+        ports:
+
+        - containerPort: 8002
+
+
+=================
+
+
+Service Template
+
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  name: sre-copilot-service
+
+spec:
+
+  type: {{ .Values.service.type }}
+
+  selector:
+
+    app: sre-copilot
+
+  ports:
+
+  - port: 8002
+
+    targetPort: 8002
+
+
+
+===============
+
+
+Install Helm Chart
+
+Inside project.
+
+helm install sre-copilot ./helm-chart
+
+============
+helm
+ ↓
+Helm command
+
+install
+ ↓
+deploy chart
+
+sre-copilot
+ ↓
+release name
+
+./helm-chart
+ ↓
+chart folder
+
+
+
+==============
+
+
+
+
+
+Verify Installation
+
+Show releases.
+
+
+helm list
+
+Output:
+
+
+NAME STATUS
+ 
+sre-copilot deployed
+
+
+===========
+
+
+Upgrade Release
+
+Suppose:
+
+replicaCount: 1
+
+
+Change.
+
+
+replicaCount: 3
+
+
+Apply.
+
+helm upgrade sre-copilot ./helm-chart
+
+Meaning:
+
+Update deployment
+
+Without deleting pods
+
+
+===========
+
+
+Rollback
+
+Suppose deployment breaks.
+
+Check history.
+
+c - helm history sre-copilot
+
+
+Output:
+
+Revision 1
+
+Revision 2
+
+Revision 3
+
+
+Rollback.
+
+
+c - helm rollback sre-copilot 2
+
+Meaning:
+
+
+Go back
+to revision 2
+
+
+==============
+
+
+
+Remove Application
+Shell
+helm uninstall sre-copilot
+
+
+
+Deletes:
+
+
+Deployment
+ 
+Service
+ 
+Pods
+ 
+ConfigMaps
+
+
+================
+
+
+Helm Commands To Memorize
+
+
+
+# create chart
+helm create sre-copilot
+
+# install chart
+helm install sre-copilot ./helm-chart
+
+# see releases
+helm list
+
+# update deployment
+helm upgrade sre-copilot ./helm-chart
+
+# release history
+helm history sre-copilot
+
+# rollback
+helm rollback sre-copilot 1
+
+# uninstall
+helm uninstall sre-copilot
+
+=====================
+
+
+Helm in Your SRE Project
+
+Full flow:
+
+
+FastAPI
+    ↓
+Docker Image
+    ↓
+Docker Hub
+    ↓
+Kubernetes
+    ↓
+Helm Chart
+    ↓
+ArgoCD
+    ↓
+Production
+
+
+
+============
+
+
+
+Compare With Your MCP Project
+
+Your MCP Project:
+
+
+
+AI SRE Project:
+
+
+FastAPI
+ ↓
+Docker
+ ↓
+Kubernetes
+ ↓
+Helm
+ ↓
+ArgoCD
+ ↓
+Auto Deployment
+
+
+============
+
+
+
+Interview Answer
+
+"Helm is a package manager for Kubernetes. Instead of managing multiple Kubernetes YAML files manually, Helm packages Deployments, Services, ConfigMaps, Secrets, and Ingress resources into a reusable Helm Chart. In my AI SRE Copilot project, I use Helm to deploy the FastAPI application, Redis, and supporting services to Kubernetes. Helm also provides versioning, upgrades, and rollback capabilities, which simplify production deployments."
+
+
+
+
+
+=================
+
+
+
+ArgoCD Explained From Scratch
+
+Since you're learning the complete AI SRE Copilot architecture, ArgoCD comes after Helm.
+
+
+Memory sequence:
+
+
+
+Python
+  ↓
+FastAPI
+  ↓
+Docker
+  ↓
+Kubernetes
+  ↓
+Helm
+  ↓
+ArgoCD
+
+
+
+==============
+
+What Problem Does ArgoCD Solve?
+
+Without ArgoCD:
+
+Developer changes code.
+
+
+Developer
+    ↓
+GitHub Push
+    ↓
+Login Kubernetes
+    ↓
+kubectl apply
+    ↓
+Deploy manually
+
+
+Manual work.
+
+Manual mistakes.
+
+Manual deployments.
+
+======================
+
+
+
+ArgoCD Solution
+
+ArgoCD follows:
+
+GitOps
+
+
+Meaning:
+
+
+Git Repository
+=
+Source Of Truth
+
+Everything comes from Git.
+
+No manual deployment.
+
+
+=============
+
+
+Without ArgoCD
+
+
+Suppose you update.
+
+
+
+return {
+    "status":"OK"
+}
+
+
+to
+
+return {
+    "status":"RUNNING"
+}
+
+
+Then:
+
+
+docker build
+
+docker push
+
+kubectl apply
+
+kubectl rollout
+
+Many manual steps.
+
+==============
+
+
+With ArgoCD
+
+Developer pushes code.
+
+
+GitHub
+   ↓
+ArgoCD detects change
+   ↓
+Kubernetes updated automatically
+
+
+
+No manual deployment.
+
+
+=============
+
+Full Architecture
+Plain Text
+
+
+
+Developer
+     │
+     ▼
+GitHub
+     │
+     ▼
+ArgoCD
+     │
+     ▼
+Kubernetes
+     │
+     ▼
+Pods Updated
+
+
+
+==========
+
+
+
+What Is GitOps?
+
+
+Traditional Deployment:
+
+Plain Text
+Developer
+↓
+Server
+↓
+Deploy
+
+GitOps Deployment:
+
+Plain Text
+Developer
+↓
+GitHub
+↓
+ArgoCD
+↓
+Kubernetes
+
+Git is master.
+
+=======================
+
+
+
+Install ArgoCD
+
+Create namespace.
+
+Shell
+# create namespace
+kubectl create namespace argocd
+
+Meaning:
+
+Plain Text
+Create ArgoCD section
+inside Kubernetes.
+
+
+============
+
+
+
+Install ArgoCD.
+
+Shell
+# install argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+
+
+Meaning:
+
+Plain Text
+Download ArgoCD manifests
+ 
+Create pods
+ 
+Create services
+ 
+Create UI
+
+
+==============
+
+
+
+Verify.
+
+Shell
+# check pods
+kubectl get pods -n argocd
+
+Expected.
+
+Plain Text
+argocd-server
+ 
+argocd-repo-server
+ 
+argocd-application-controller
+
+Running state.
+
+
+
+================
+
+
+
+View ArgoCD UI
+
+Forward port.
+
+Shell
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+
+
+Open browser.
+
+Plain Text
+https://localhost:8080
+
+ArgoCD Dashboard appears.
+
+
+Get Admin Password
+
+Command.
+
+
+kubectl get secret argocd-initial-admin-secret \
+-n argocd \
+-o jsonpath="{.data.password}" | base64 -d
+
+
+
+Purpose.
+
+Plain Text
+Read admin password
+from Kubernetes secret.
+
+
+
+Login.
+
+Plain Text
+Username:
+admin
+ 
+Password:
+generated password
+
+
+
+
+ArgoCD Concepts
+
+You must remember 4 objects.
+
+Plain Text
+Application
+ 
+Repository
+ 
+Cluster
+ 
+Project
+
+
+
+===========
+
+
+
+Repository
+
+Example.
+
+Plain Text
+GitHub Repository
+ 
+future-ai-sre-copilot
+
+
+
+=======
+
+
+
+Contains.
+
+Plain Text
+helm-chart
+ 
+deployment.yaml
+ 
+service.yaml
+
+
+=============
+
+
+Cluster
+
+Example.
+
+Plain Text
+Kubernetes Cluster
+
+Can be:
+
+Plain Text
+Minikube
+ 
+AKS
+ 
+EKS
+ 
+GKE
+
+==============
+
+
+Application
+
+Application tells ArgoCD:
+
+Plain Text
+Take code
+ 
+From GitHub
+ 
+Deploy To Kubernetes
+
+
+================
+
+Project
+
+Project groups applications.
+
+Example.
+
+Plain Text
+Development
+ 
+QA
+ 
+Production
+
+
+===============
+
+
+
+Create Application
+
+Application YAML.
+
+
+# Kubernetes API
+apiVersion: argoproj.io/v1alpha1
+
+# resource type
+kind: Application
+
+# metadata section
+metadata:
+
+  # application name
+  name: sre-copilot
+
+# spec section
+spec:
+
+  # target project
+  project: default
+
+  # source repository
+  source:
+
+    # github url
+    repoURL: https://github.com/company/sre-copilot
+
+    # branch
+    targetRevision: HEAD
+
+    # helm path
+    path: helm-chart
+
+  # deployment destination
+  destination:
+
+    # kubernetes cluster
+    server: https://kubernetes.default.svc
+
+    # namespace
+    namespace: default
+
+  # automation settings
+  syncPolicy:
+
+    automated:
+
+      # remove old resources
+      prune: true
+
+      # self healing
+      selfHeal: true
+
+
+
+
+================
+
+
+
+Explanation Line By Line
+YAML
+apiVersion: argoproj.io/v1alpha1
+
+ArgoCD API version.
+
+YAML
+kind: Application
+ 
+
+Create ArgoCD application.
+
+YAML
+name: sre-copilot
+
+Application name.
+
+YAML
+repoURL
+
+GitHub repository.
+
+YAML
+targetRevision: HEAD
+
+Latest branch commit.
+
+YAML
+path: helm-chart
+
+Location of Helm chart.
+
+YAML
+namespace: default
+
+Deploy resources here.
+
+YAML
+prune: true
+
+Delete unused resources.
+
+YAML
+selfHeal: true
+
+Auto-fix manual changes.
+
+
+
+================
+
+
+
+Self Healing Example
+
+Someone manually changes deployment.
+
+Shell
+kubectl scale deployment sre-copilot --replicas=10
+
+Git says:
+
+YAML
+replicas: 2
+
+ArgoCD sees mismatch.
+
+
+Automatically restores:
+
+YAML
+replicas: 2
+
+
+This is called:
+
+Plain Text
+Self Healing
+
+
+============
+
+
+Sync Process
+
+Developer pushes code.
+
+Plain Text
+GitHub Push
+↓
+ArgoCD Detects
+↓
+Sync Starts
+↓
+Helm Deploys
+↓
+Pods Updated
+
+=============
+
+
+Manual Sync
+
+If auto sync disabled.
+
+Shell
+argocd app sync sre-copilot
+
+Meaning.
+
+Plain Text
+Deploy latest version.
+
+
+=============
+
+
+Application Status
+
+Healthy.
+
+Plain Text
+Healthy
+Synced
+
+Perfect.
+
+Problem.
+
+Plain Text
+Healthy
+OutOfSync
+
+
+Git differs from cluster.
+
+Problem.
+
+Plain Text
+Degraded
+
+Pods failing.
+
+
+====================
+
+
+
+Rollback
+
+Check history.
+
+Shell
+argocd app history sre-copilot
+
+Rollback.
+
+Shell
+argocd app rollback sre-copilot 3
+
+Meaning.
+
+Plain Text
+Return to revision 3.
+
+
+ArgoCD + Helm
+
+Most companies use:
+
+Plain Text
+GitHub
+↓
+Helm Chart
+↓
+ArgoCD
+↓
+Kubernetes
+
+Why?
+
+Helm packages deployment.
+
+ArgoCD automates deployment.
+
+
+
+===========
+
+
+AI SRE Project Flow
+
+Your project becomes:
+
+Plain Text
+
+
+FastAPI
+     ↓
+Docker Build
+     ↓
+Docker Registry
+     ↓
+Helm Chart
+     ↓
+GitHub
+     ↓
+ArgoCD
+     ↓
+Kubernetes
+     ↓
+Pods Running
+
+
+==================
+
+
+Interview Answer
+
+"ArgoCD is a GitOps continuous delivery tool for Kubernetes. It monitors Git repositories and automatically synchronizes Kubernetes clusters with the desired state defined in Git. In my AI SRE Copilot project, I use Helm charts to package deployments and ArgoCD to continuously deploy updates to Kubernetes. ArgoCD provides automated sync, self-healing, rollback, version tracking, and production-grade GitOps workflows."
+
+
+============
+
+
+PART 22 - LANGFUSE
+What Problem Does Langfuse Solve?
+
+Without Langfuse:
+
+
+User asks question
+ 
+AI gives answer
+ 
+Nobody knows:
+- What prompt was used?
+- Which agent worked?
+- How many tokens?
+- How much cost?
+- Why answer failed?
+
+
+
+==============
+
+
+
+With Langfuse:
+
+
+User Request
+↓
+Agent Execution
+↓
+Langfuse Trace
+
+
+=========
+
+
+You can see:
+
+Plain Text
+Input
+ 
+Prompt
+ 
+Output
+ 
+Execution Time
+ 
+Cost
+ 
+Tokens
+ 
+Errors
+
+
+
+=============
+
+
+
+Installation
+
+Docker.
+
+
+# create langfuse container
+docker run -d \
+--name langfuse \
+-p 3000:3000 \
+langfuse/langfuse
+
+
+
+In Agent Code
+Python
+
+
+# import langfuse client
+from langfuse import Langfuse
+
+# create langfuse client
+langfuse = Langfuse()
+
+# create trace
+trace = langfuse.trace(
+
+    # trace name
+    name="Investigate Incident"
+)
+
+# save output
+trace.update(
+
+    # result
+    output="OOM Found"
+)
+
+=========================
+
+
+Why Important?
+
+Production companies want:
+
+Plain Text
+Trust
+ 
+Audit
+ 
+Debugging
+ 
+Cost Tracking
+
+
+======================================
+
+
+
+
+PART 23 - OPENTELEMETRY
+What Is OpenTelemetry?
+
+Think:
+
+
+Application Trace
+
+Suppose:
+
+
+Frontend
+   ↓
+FastAPI
+   ↓
+Agent
+   ↓
+Redis
+   ↓
+Qdrant
+
+
+Request becomes slow.
+
+Where?
+
+Unknown.
+
+
+OpenTelemetry shows.
+
+Frontend 200ms
+
+FastAPI 50ms
+
+Agent 5 sec
+
+Redis 2ms
+
+Qdrant 35ms
+
+
+
+=============
+
+
+
+Install
+Shell
+pip install opentelemetry-api
+ 
+pip install opentelemetry-sdk
+
+
+# import tracer
+from opentelemetry import trace
+
+# get tracer
+tracer = trace.get_tracer(__name__)
+
+# create span
+with tracer.start_as_current_span(
+    "investigation"
+):
+
+    print("Running...")
+
+
+
+
+
+=========
+
+
+Why?
+Plain Text
+Performance Monitoring
+
+
+
+==================
+
+
+
+PART 24 - PROMETHEUS
+What Problem?
+
+Need metrics.
+
+Monitor:
+
+Plain Text
+CPU
+ 
+Memory
+ 
+Disk
+ 
+Network
+ 
+Pods
+ 
+
+Prometheus collects.
+
+Architecture.
+
+Plain Text
+Application
+↓
+Prometheus
+↓
+Metrics Database
+
+
+
+===========
+
+
+Install
+
+Helm.
+
+Shell
+helm install prometheus \
+prometheus-community/Prometheus
+
+
+
+Examples
+
+Prometheus keeps.
+
+Plain Text
+CPU = 40%
+ 
+Memory = 60%
+ 
+Network = 10 Mbps
+Kubernetes Commands
+Shell
+kubectl top node
+ 
+kubectl top pod
+
+
+
+=============
+
+
+PART 25 - GRAFANA
+
+
+PART 25 - GRAFANA
+
+Prometheus stores.
+
+Grafana displays.
+
+Architecture.
+
+Plain Text
+Prometheus
+↓
+Grafana
+↓
+Dashboard
+
+Dashboard.
+
+Plain Text
+CPU Usage
+ 
+Memory Usage
+ 
+Error Rate
+ 
+Agent Calls
+ 
+Latency
+Install
+Shell
+helm install grafana \
+grafana/grafana
+Example
+
+Graph:
+
+Plain Text
+24 Hour Memory Usage
+ 
+|
+|
+| /\
+| / \
+|___/ \____
+
+
+======================
+
+
+
+
+PART 26 - DEEPEVAL
+Problem
+
+How do we know AI works?
+
+Need testing.
+
+
+Install.
+
+Shell
+pip install deepeval
+
+
+# import workflow
+from workflows.temporal_workflow import run_sre_workflow
+
+# test case
+def test_incident():
+
+    # execute workflow
+    result = run_sre_workflow(
+        "CrashLoopBackOff"
+    )
+
+    # verify response
+    assert "result" in result
+
+
+
+===========
+
+
+
+Purpose
+Plain Text
+Test AI
+ 
+Test Agents
+ 
+Test Workflows
+
+
+Similar to:
+
+Plain Text
+PyTest
+
+but AI focused.
+=====
+
+
+
+
+PART 27 - GITHUB ACTIONS (CI/CD)
+Problem
+
+Developer pushes code.
+
+Need automatic deployment.
+
+
+
+Without GitHub Actions.
+
+Plain Text
+Push Code
+ 
+Login Server
+ 
+Deploy Manually
+
+
+With GitHub Actions.
+
+Plain Text
+Push Code
+↓
+Automatic Build
+↓
+Automatic Test
+↓
+Automatic Deployment
+
+
+
+==============
+
+
+Project Structure
+Plain Text
+.github
+ 
+└── workflows
+ 
+└── deploy.yml
+
+
+deploy.yml
+
+Every line explained.
+
+
+
+# workflow name
+name: Deploy
+
+# trigger
+on:
+
+  # when code pushed
+  push:
+
+    # watch main branch
+    branches:
+
+      - main
+
+# jobs
+jobs:
+
+  deploy:
+
+    # ubuntu runner
+    runs-on: ubuntu-latest
+
+    # steps
+    steps:
+
+      # download code
+      - uses: actions/checkout@v4
+
+      # install python
+      - uses: actions/setup-python@v5
+
+      # version
+        with:
+
+          python-version: "3.11"
+
+      # install packages
+      - run: pip install -r requirements.txt
+
+      # run tests
+      - run: pytest
+
+
+
+
+===========
+
+
+
+PART 28 - COMPLETE PRODUCTION FLOW
+
+Now everything together.
+
+Plain Text
+
+
+
+Developer
+     │
+     ▼
+GitHub
+     │
+     ▼
+GitHub Actions
+     │
+     ▼
+Docker Build
+     │
+     ▼
+Image Registry
+     │
+     ▼
+ArgoCD
+     │
+     ▼
+Helm Chart
+     │
+     ▼
+Kubernetes
+     │
+     ▼
+FastAPI
+     │
+     ▼
+Temporal
+     │
+ ┌───┼───┐
+ ▼   ▼   ▼
+Investigator
+Planner
+Executor
+     │
+     ▼
+Redis
+     │
+     ▼
+Qdrant
+     │
+     ▼
+Langfuse
+     │
+     ▼
+OpenTelemetry
+     │
+     ▼
+Prometheus
+     │
+     ▼
+Grafana
+     │
+     ▼
+DeepEval Reports
+
+
+
+
+=====
+
+
+
+Interview Story (2 Minute Version)
+
+"I built an Autonomous AI SRE Copilot. FastAPI acts as the API layer. Temporal orchestrates Investigator, Planner, and Executor agents built with CrewAI. Redis stores short-term memory and Qdrant stores long-term incident memory. The application is containerized using Docker and deployed on Kubernetes using Helm charts. ArgoCD provides GitOps-based deployment. Langfuse and OpenTelemetry provide observability. Prometheus and Grafana monitor infrastructure metrics. DeepEval validates AI quality. GitHub Actions automates CI/CD."
+
+
+
+===========
+
+
+
+
+What Comes Next After This?
+
+The final advanced topics are:
+
+Plain Text
+1. vLLM
+2. Llama 3 / Mistral Models
+3. LoRA Fine-Tuning
+4. Ray Distributed AI
+5. AutoGen
+6. OpenAI Agents SDK
+7. Agent-to-Agent (A2A)
+8. Vector Search Optimization
+9. MLflow
+10. Kubeflow
+11. SageMaker
+12. Production Multi-Agent Architecture
+
+
+
+
+===============
+
+
+
+Those are typically the Staff Engineer / Principal Engineer level topics after you've mastered the complete FastAPI → CrewAI → Temporal → Kubernetes → ArgoCD platform.
+
+
+
+==========
+
+
+
+vLLM Explained From Scratch
+
+Since you're learning the complete AI SRE Copilot architecture, vLLM comes after FastAPI, Agents, Kubernetes, and ArgoCD.
+
+Think:
+
+Plain Text
+FastAPI
+↓
+Agent
+↓
+LLM
+
+The question is:
+
+Plain Text
+How do we serve the LLM efficiently?
+
+Answer:
+
+Plain Text
+vLLM
+What is vLLM?
+
+vLLM means:
+
+Plain Text
+Virtual Large Language Model
+
+It is a high-performance LLM serving engine.
+
+Purpose:
+
+Plain Text
+Run Llama
+Run Mistral
+Run DeepSeek
+Run Qwen
+Run Gemma
+ 
+Very Fast
+Problem Without vLLM
+
+Suppose 100 users ask:
+
+Plain Text
+What is root cause?
+
+Traditional serving:
+
+Plain Text
+Request 1
+Wait
+ 
+Request 2
+Wait
+ 
+Request 3
+Wait
+
+Slow.
+
+GPU utilization poor.
+
+Expensive.
+
+With vLLM
+Plain Text
+Request 1
+Request 2
+Request 3
+Request 4
+Request 5
+ 
+Process Together
+
+Called:
+
+Plain Text
+Continuous Batching
+
+Much faster.
+
+In Your AI SRE Project
+
+Without vLLM:
+
+Plain Text
+Alert
+↓
+CrewAI
+↓
+OpenAI API
+
+Using OpenAI cloud.
+
+With vLLM:
+
+Plain Text
+Alert
+↓
+CrewAI
+↓
+vLLM
+↓
+Llama 3
+
+Local model.
+
+No OpenAI API cost.
+
+Architecture
+Plain Text
+FastAPI
+↓
+CrewAI
+↓
+vLLM Server
+↓
+Llama 3
+Why Companies Use vLLM
+
+Benefits:
+
+Plain Text
+Fast
+ 
+Cheap
+ 
+Open Source
+ 
+GPU Optimized
+ 
+Production Ready
+vLLM vs Ollama
+Ollama
+Plain Text
+Learning
+ 
+Local Testing
+ 
+Small Projects
+
+Example:
+
+Shell
+ollama run llama3
+vLLM
+Plain Text
+Production
+ 
+Enterprise
+ 
+High Traffic
+
+Example:
+
+Shell
+vllm serve meta-llama/Llama-3-8B
+ 
+Install vLLM
+
+Create environment.
+
+Shell
+python3 -m venv venv
+
+Activate.
+
+Shell
+source venv/bin/activate
+
+Install.
+
+Shell
+pip install vllm
+
+Verify.
+
+Shell
+python -c "import vllm; print('vLLM OK')"
+Start First Model
+
+Example:
+
+Shell
+vllm serve meta-llama/Llama-3-8B-Instruct
+
+Meaning:
+
+Plain Text
+vllm
+↓
+Start server
+ 
+serve
+↓
+Host model
+ 
+Llama-3-8B
+↓
+Model name
+What Happens Internally?
+Plain Text
+GPU
+↓
+ 
+Load Model
+↓
+ 
+Open API Endpoint
+↓
+ 
+Wait For Requests
+API Endpoint
+
+vLLM creates:
+
+Plain Text
+http://localhost:8000
+
+Like FastAPI.
+
+Test Model
+Shell
+curl http://localhost:8000/v1/models
+ 
+
+Output:
+
+JSON
+{
+"data": [
+{
+"id": "llama3"
+}
+]
+}
+Python Example
+
+Every line commented.
+
+
+
+
+# import openai client
+from openai import OpenAI
+
+# connect to local vLLM server
+client = OpenAI(
+
+    # local endpoint
+    base_url="http://localhost:8000/v1",
+
+    # dummy key
+    api_key="EMPTY"
+)
+
+# send prompt
+response = client.chat.completions.create(
+
+    # model name
+    model="llama3",
+
+    # user prompt
+    messages=[
+        {
+            "role":"user",
+            "content":"Explain Kubernetes"
+        }
+    ]
+)
+
+# print answer
+print(
+    response.choices[0].message.content
+)
+
+
+
+================
+
+
+
+Why API Looks Like OpenAI?
+
+Because vLLM supports:
+
+Plain Text
+OpenAI Compatible API
+
+This is very important.
+
+Your CrewAI code remains almost the same.
+
+CrewAI + vLLM
+
+Example.
+
+Python
+# import llm
+from crewai import LLM
+ 
+# connect local model
+llm = LLM(
+ 
+# model server
+model="openai/llama3",
+ 
+# local endpoint
+base_url="http://localhost:8000/v1",
+ 
+# dummy key
+api_key="EMPTY"
+)
+
+Agent:
+
+Python
+Agent(
+ 
+role="Investigator",
+ 
+goal="Find root cause",
+ 
+llm=llm
+)
+
+Now:
+
+Plain Text
+CrewAI
+↓
+vLLM
+↓
+Llama3
+ 
+Continuous Batching
+
+This is vLLM's superpower.
+
+Normal:
+
+Plain Text
+Request 1
+ 
+Process
+ 
+Request 2
+ 
+Process
+
+vLLM:
+
+Plain Text
+Request 1
+ 
+Request 2
+ 
+Request 3
+ 
+Request 4
+ 
+Run Together
+
+Result:
+
+Plain Text
+More requests
+ 
+Less GPU usage
+ 
+Faster response
+Quantization
+
+Huge model:
+
+Plain Text
+70 GB
+
+Too large.
+
+Compress:
+
+Plain Text
+4-bit
+ 
+8-bit
+
+Now:
+
+Plain Text
+20 GB
+ 
+10 GB
+
+Can run cheaper.
+
+Popular Models With vLLM
+Plain Text
+Llama 3
+ 
+Mistral
+ 
+Mixtral
+ 
+DeepSeek
+ 
+Qwen
+ 
+Gemma
+AI SRE Project Flow
+Plain Text
+Prometheus Alert
+↓
+FastAPI
+↓
+Temporal
+↓
+Investigator
+↓
+Planner
+↓
+Executor
+↓
+vLLM
+↓
+Llama 3
+↓
+Decision
+Docker Example
+
+Run vLLM.
+
+Shell
+docker run \
+--gpus all \
+-p 8000:8000 \
+vllm/vllm-openai \
+--model meta-llama/Llama-3-8B-Instruct
+
+Meaning:
+
+Plain Text
+GPU Enabled
+ 
+Port 8000
+ 
+Run Llama 3
+Production Architecture
+Plain Text
+Users
+↓
+Load Balancer
+↓
+FastAPI
+↓
+CrewAI
+↓
+vLLM
+↓
+Llama3
+↓
+Redis
+↓
+Qdrant
+Interview Answer
+
+"vLLM is a high-performance LLM serving engine designed for production workloads. It provides OpenAI-compatible APIs, continuous batching, optimized GPU memory management, and high throughput. In my AI SRE Copilot architecture, CrewAI agents connect to a vLLM server hosting Llama 3. This allows us to run local models efficiently without relying on external APIs while supporting enterprise-scale concurrent requests."
+
+Easy Formula
+
+Remember:
+
+Plain Text
+Ollama
+=
+Learning
+ 
+vLLM
+=
+Production
+
+And:
+
+Plain Text
+FastAPI
+↓
+CrewAI
+↓
+vLLM
+↓
+Llama 3
+
+This is the most common modern enterprise pattern for self-hosted Agentic AI systems.
+
+
+
+
+==================================
+
+
+
+
+LoRA (Low Rank Adaptation) - Complete Beginner Guide
+===================================================
+
+WHAT IS LORA?
+-------------
+LoRA stands for Low Rank Adaptation.
+
+Purpose:
+Instead of training an entire Large Language Model (LLM), LoRA trains only a small adapter layer.
+
+Traditional Training:
+
+User Data
+    |
+    v
+Train Entire Llama 3 Model
+    |
+    v
+Very Expensive
+
+LoRA Training:
+
+User Data
+    |
+    v
+Train Small Adapter Only
+    |
+    v
+Cheap and Fast
+
+
+WHY USE LORA?
+-------------
+Benefits:
+
+1. Lower GPU Cost
+2. Faster Training
+3. Smaller Model Files
+4. Easy Deployment
+5. Works with Llama, Mistral, Qwen, DeepSeek
+
+
+LORA VS RAG
+-----------
+RAG:
+
+Question
+   |
+   v
+Vector Database
+   |
+   v
+LLM
+
+Knowledge remains outside the model.
+
+LoRA:
+
+Question
+   |
+   v
+LLM + Adapter
+
+Knowledge becomes part of model behavior.
+
+Best Practice:
+
+LoRA + RAG Together
+
+
+INSTALLATION
+------------
+Create virtual environment:
+
+python3 -m venv venv
+source venv/bin/activate
+
+Install packages:
+
+pip install torch
+pip install transformers
+pip install peft
+pip install trl
+pip install datasets
+pip install accelerate
+
+Verify:
+
+python -c "import torch, transformers, peft; print('ALL OK')"
+
+
+PROJECT STRUCTURE
+-----------------
+
+lora-project/
+|
+|-- train.json
+|-- train_lora.py
+|-- adapters/
+|-- test_lora.py
+|-- requirements.txt
+
+
+TRAINING DATA
+-------------
+train.json
+
+[
+    {
+        "instruction": "Fix OOM Issue",
+        "output": "Increase Kubernetes memory"
+    },
+    {
+        "instruction": "Fix CrashLoopBackOff",
+        "output": "Check logs and restart deployment"
+    }
+]
+
+
+TRAIN LORA SCRIPT
+-----------------
+train_lora.py
+
+# import tokenizer class
+from transformers import AutoTokenizer
+
+# import model class
+from transformers import AutoModelForCausalLM
+
+# import LoRA configuration
+from peft import LoraConfig
+
+# model name
+MODEL_NAME = "meta-llama/Llama-3-8B"
+
+# load tokenizer
+# converts text to tokens
+# tokens are numbers understood by model
+tokenizer = AutoTokenizer.from_pretrained(
+    MODEL_NAME
+)
+
+# load base model
+# load original Llama model
+model = AutoModelForCausalLM.from_pretrained(
+    MODEL_NAME
+)
+
+# create LoRA configuration
+config = LoraConfig(
+
+    # adapter rank
+    r=8,
+
+    # scaling value
+    lora_alpha=16,
+
+    # dropout value
+    lora_dropout=0.05,
+
+    # language model task
+    task_type="CAUSAL_LM"
+)
+
+# verify configuration
+print("LoRA Configuration Loaded")
+
+
+PARAMETER EXPLANATION
+---------------------
+
+r=8
+----
+Adapter size.
+
+Common values:
+4
+8
+16
+32
+
+Higher value:
+More learning
+More GPU memory
+
+
+lora_alpha=16
+--------------
+Controls strength of adapter.
+
+Higher:
+More influence
+
+Lower:
+Less influence
+
+
+lora_dropout=0.05
+------------------
+Prevents overfitting.
+
+
+SAVE ADAPTER
+------------
+
+# save LoRA adapter
+model.save_pretrained(
+    './adapters/sre-lora'
+)
+
+Output:
+
+adapters/
+ |
+ |-- adapter_config.json
+ |-- adapter_model.safetensors
+
+
+LOAD LORA ADAPTER
+-----------------
+
+# import PEFT model
+from peft import PeftModel
+
+# attach LoRA adapter to base model
+model = PeftModel.from_pretrained(
+
+    # original model
+    model,
+
+    # adapter location
+    './adapters/sre-lora'
+)
+
+print('LoRA Loaded')
+
+
+TEST SCRIPT
+-----------
+test_lora.py
+
+# import OpenAI client
+from openai import OpenAI
+
+# connect to vLLM server
+client = OpenAI(
+    base_url='http://localhost:8000/v1',
+    api_key='EMPTY'
+)
+
+# send prompt
+response = client.chat.completions.create(
+
+    model='llama3',
+
+    messages=[
+        {
+            'role':'user',
+            'content':'How do I fix OOM issue?'
+        }
+    ]
+)
+
+# print answer
+print(
+    response.choices[0].message.content
+)
+
+
+LORA + vLLM
+-----------
+Run model with adapter:
+
+vllm serve base-model \
+--lora-modules sre=./adapters/sre-lora
+
+Architecture:
+
+FastAPI
+   |
+   v
+CrewAI
+   |
+   v
+vLLM
+   |
+   v
+Llama 3
+   |
+   v
+LoRA Adapter
+   |
+   v
+Custom Knowledge
+
+
+AI SRE USE CASE
+---------------
+Train on:
+
+- Incident Tickets
+- Kubernetes Logs
+- Runbooks
+- RCA Documents
+- Internal Procedures
+
+Result:
+
+Generic LLM
+     +
+Company Knowledge
+     =
+Specialized SRE Assistant
+
+
+INTERVIEW ANSWER
+----------------
+LoRA (Low Rank Adaptation) is a parameter-efficient fine-tuning technique that trains lightweight adapters instead of retraining all model parameters. It reduces GPU cost, training time, and storage requirements. In enterprise AI systems, LoRA is commonly combined with vLLM for serving and Qdrant for retrieval, creating a scalable and cost-effective Agentic AI platform.
+
+
+
+======================
+
+
+
+
+Ray Distributed AI - Complete Beginner Guide
+=============================================
+
+WHAT IS RAY?
+------------
+Ray is an open-source distributed computing framework.
+
+Simple Meaning:
+
+Run Python code across:
+- Multiple CPUs
+- Multiple GPUs
+- Multiple Servers
+- Multiple Clusters
+
+
+WHY DO WE NEED RAY?
+-------------------
+Without Ray:
+
+Task 1
+  |
+Task 2
+  |
+Task 3
+  |
+Task 4
+
+Runs one after another.
+
+With Ray:
+
+Task 1  Task 2  Task 3  Task 4
+   \      |      |      /
+        Parallel
+
+Much faster execution.
+
+
+AI SRE EXAMPLE
+--------------
+Without Ray:
+
+100 Alerts
+   |
+One Investigator Agent
+   |
+Process one-by-one
+
+With Ray:
+
+100 Alerts
+   |
+100 Investigator Agents
+   |
+Process simultaneously
+
+
+INSTALLATION
+------------
+Create virtual environment:
+
+python3 -m venv venv
+source venv/bin/activate
+
+Install Ray:
+
+pip install ray
+
+Verify:
+
+python -c "import ray; print(ray.__version__)"
+
+
+FIRST RAY PROGRAM
+-----------------
+
+# import ray framework
+import ray
+
+# start local ray runtime
+ray.init()
+
+# create remote function
+@ray.remote
+
+# function definition
+def hello():
+
+    # return response
+    return "Hello Ray"
+
+# execute function remotely
+result = hello.remote()
+
+# get result from worker
+print(
+    ray.get(result)
+)
+
+Output:
+
+Hello Ray
+
+
+UNDERSTANDING REMOTE
+--------------------
+Normal Python:
+
+hello()
+
+Runs locally.
+
+Ray:
+
+hello.remote()
+
+Runs on Ray worker.
+
+Can execute on another CPU or machine.
+
+
+PARALLEL EXECUTION EXAMPLE
+--------------------------
+
+# import ray
+import ray
+
+# start ray
+ray.init()
+
+# create remote task
+@ray.remote
+def process(i):
+
+    # multiply value
+    return i * 2
+
+# launch tasks in parallel
+results = [
+
+    process.remote(i)
+
+    for i in range(10)
+]
+
+# collect results
+print(
+    ray.get(results)
+)
+
+Purpose:
+
+Run all tasks simultaneously.
+
+
+RAY ACTORS
+----------
+Function:
+
+Stateless
+
+Actor:
+
+Stateful
+
+Useful for:
+- Agent State
+- Memory
+- Counters
+- Workflow State
+
+
+ACTOR EXAMPLE
+-------------
+
+# import ray
+import ray
+
+# initialize ray
+ray.init()
+
+# create actor
+@ray.remote
+class Counter:
+
+    # constructor
+    def __init__(self):
+
+        # initialize count
+        self.count = 0
+
+    # increment method
+    def increment(self):
+
+        # add one
+        self.count += 1
+
+        # return value
+        return self.count
+
+# create actor
+counter = Counter.remote()
+
+# call actor method
+print(
+    ray.get(
+        counter.increment.remote()
+    )
+)
+
+
+RAY CLUSTER ARCHITECTURE
+------------------------
+
+Head Node
+    |
++---+---+
+|       |
+Worker  Worker
+Node    Node
+
+Head Node:
+- Manages cluster
+- Schedules tasks
+
+Worker Nodes:
+- Execute tasks
+
+
+START HEAD NODE
+---------------
+
+ray start --head
+
+Purpose:
+
+Create cluster controller.
+
+
+ADD WORKER NODE
+---------------
+
+ray start --address='HEAD_IP:6379'
+
+Purpose:
+
+Join existing cluster.
+
+
+RAY WITH GPUS
+-------------
+
+# import ray
+import ray
+
+# gpu task
+@ray.remote(num_gpus=1)
+def train_model():
+
+    # training logic
+    return "Training Started"
+
+Meaning:
+
+Reserve one GPU for task.
+
+
+RAY SERVE
+---------
+Purpose:
+
+Serve ML models and APIs.
+
+Installation:
+
+pip install "ray[serve]"
+
+Example:
+
+from ray import serve
+
+serve.start()
+
+@serve.deployment
+class Predictor:
+
+    def __call__(self):
+
+        return "Prediction"
+
+Predictor.deploy()
+
+
+RAY + CREWAI
+------------
+
+CrewAI Agent
+     |
+Ray Workers
+     |
+Parallel Execution
+
+Example:
+
+@ray.remote
+def investigate(alert):
+
+    return alert
+
+alerts = [
+    investigate.remote("alert1"),
+    investigate.remote("alert2"),
+    investigate.remote("alert3")
+]
+
+results = ray.get(alerts)
+
+
+RAY + VLLM
+----------
+
+Users
+  |
+FastAPI
+  |
+Ray Cluster
+  |
+vLLM
+  |
+Llama 3
+
+Benefits:
+- Load Balancing
+- High Throughput
+- GPU Optimization
+
+
+RAY + LORA
+----------
+
+LoRA Adapter A
+LoRA Adapter B
+LoRA Adapter C
+
+Ray can run all adapters on different workers simultaneously.
+
+
+RAY VS TEMPORAL
+---------------
+Temporal:
+
+Workflow Orchestration
+
+Example:
+Investigator -> Planner -> Executor
+
+Ray:
+
+Distributed Execution
+
+Example:
+100 Investigator Agents running in parallel.
+
+Best Practice:
+
+Temporal = Workflow Brain
+Ray = Execution Engine
+
+
+RAY VS KUBERNETES
+-----------------
+Kubernetes:
+
+Manage Containers
+
+Examples:
+- Pods
+- Services
+- Deployments
+
+Ray:
+
+Manage Python/AI Workloads
+
+Examples:
+- Agents
+- Training Jobs
+- Inference Jobs
+
+Use Together:
+
+Kubernetes
+     |
+Ray Cluster
+     |
+AI Workloads
+
+
+AI SRE ARCHITECTURE
+-------------------
+
+Prometheus
+     |
+FastAPI
+     |
+Temporal
+     |
+Ray Cluster
+     |
+CrewAI Agents
+     |
+vLLM
+     |
+LoRA
+     |
+Qdrant
+
+
+INTERVIEW ANSWER
+----------------
+Ray is an open-source distributed computing framework used to scale Python, AI, and machine learning workloads. It enables parallel execution across CPUs, GPUs, and clusters. In an AI SRE Copilot platform, Ray executes investigator, planner, and executor agents concurrently, integrates with vLLM for scalable inference, and works alongside Temporal for workflow orchestration.
+
+MEMORY FORMULA
+--------------
+Temporal = Workflow Brain
+Ray = Distributed Execution
+vLLM = Model Server
+LoRA = Custom Knowledge
+Qdrant = Memory
+CrewAI = Agents
+
+
+
+-------------------
+
+
+Microsoft AutoGen - Complete Beginner Guide With Code & Comments
+===============================================================
+
+WHAT IS AUTOGEN?
+----------------
+AutoGen is a Microsoft multi-agent framework.
+
+Purpose:
+- Create AI agents
+- Let agents talk to each other
+- Use tools
+- Solve problems collaboratively
+
+Architecture:
+
+User
+ |
+ v
+Manager Agent
+ |
+ +------------+
+ |            |
+ v            v
+Investigator  Planner
+ |
+ v
+Executor
+ |
+ v
+Final Answer
+
+
+INSTALLATION
+------------
+Create virtual environment:
+
+python3 -m venv venv
+
+Activate:
+
+source venv/bin/activate
+
+Install AutoGen:
+
+pip install pyautogen
+
+Verify:
+
+python -c "import autogen; print('AutoGen Installed')"
+
+
+FIRST AUTOGEN PROGRAM
+---------------------
+
+# import autogen library
+import autogen
+
+# create model configuration list
+config_list = [
+
+    {
+        # model name
+        'model': 'gpt-4',
+
+        # API key
+        'api_key': 'YOUR_API_KEY'
+    }
+]
+
+# create AI assistant agent
+assistant = autogen.AssistantAgent(
+
+    # agent name
+    name='Assistant',
+
+    # LLM configuration
+    llm_config={
+        'config_list': config_list
+    }
+)
+
+# create user proxy
+user_proxy = autogen.UserProxyAgent(
+
+    # proxy name
+    name='User'
+)
+
+# start conversation
+user_proxy.initiate_chat(
+
+    # target agent
+    assistant,
+
+    # first message
+    message='Explain Kubernetes'
+)
+
+
+UNDERSTANDING AGENTS
+--------------------
+AssistantAgent
+- AI Worker
+
+UserProxyAgent
+- Represents user
+
+GroupChat
+- Multiple agents communicate
+
+GroupChatManager
+- Controls conversation
+
+
+INVESTIGATOR AGENT
+------------------
+
+# import autogen
+import autogen
+
+# create investigator agent
+investigator = autogen.AssistantAgent(
+
+    # agent name
+    name='Investigator',
+
+    # agent instructions
+    system_message='Find root cause of incidents'
+)
+
+Purpose:
+Alert -> Root Cause
+
+
+PLANNER AGENT
+-------------
+
+# create planner agent
+planner = autogen.AssistantAgent(
+
+    # agent name
+    name='Planner',
+
+    # instructions
+    system_message='Create remediation plan'
+)
+
+Purpose:
+Root Cause -> Fix Plan
+
+
+EXECUTOR AGENT
+--------------
+
+# create executor agent
+executor = autogen.AssistantAgent(
+
+    # agent name
+    name='Executor',
+
+    # instructions
+    system_message='Apply approved fix'
+)
+
+Purpose:
+Fix Plan -> Action
+
+
+GROUP CHAT
+----------
+
+# import group chat
+from autogen import GroupChat
+
+# create group discussion
+group_chat = GroupChat(
+
+    # participating agents
+    agents=[
+        investigator,
+        planner,
+        executor
+    ],
+
+    # initial messages
+    messages=[],
+
+    # maximum discussion rounds
+    max_round=10
+)
+
+
+GROUP CHAT MANAGER
+------------------
+
+# import manager
+from autogen import GroupChatManager
+
+# create manager
+manager = GroupChatManager(
+
+    # attach group chat
+    groupchat=group_chat
+)
+
+Purpose:
+Manage agent conversation flow.
+
+
+TOOLS IN AUTOGEN
+----------------
+
+# sample function tool
+def check_logs():
+
+    # return sample log
+    return 'OOMKilled'
+
+# register tool
+investigator.register_function(
+
+    # function reference
+    check_logs
+)
+
+Now AI agent can call:
+
+check_logs()
+
+
+FASTAPI + AUTOGEN
+-----------------
+
+# import fastapi
+from fastapi import FastAPI
+
+# create app
+app = FastAPI()
+
+# create endpoint
+@app.post('/incident')
+
+# function definition
+def investigate_incident():
+
+    # launch agent workflow
+    return {
+        'status':'running'
+    }
+
+
+AUTOGEN + REDIS
+---------------
+Purpose:
+- Conversation memory
+- Recent incidents
+- Session state
+
+Architecture:
+
+Agent
+ |
+ v
+Redis
+
+
+AUTOGEN + QDRANT
+----------------
+Purpose:
+- Long term memory
+- Incident history
+- Similar fixes
+
+Architecture:
+
+Agent
+ |
+ v
+Qdrant
+
+
+AUTOGEN + TEMPORAL
+------------------
+Purpose:
+Workflow Orchestration
+
+Flow:
+
+Investigator
+ |
+ v
+Planner
+ |
+ v
+Executor
+
+Temporal remembers workflow state.
+
+
+AUTOGEN + RAY
+-------------
+Purpose:
+Parallel Agent Execution
+
+Architecture:
+
+Ray
+ |
+ +--------+
+ |        |
+ v        v
+Agent1  Agent2
+
+
+AUTOGEN + VLLM
+--------------
+
+# local model settings
+llm_config = {
+
+    # model name
+    'model':'llama3',
+
+    # local vLLM endpoint
+    'base_url':'http://localhost:8000/v1',
+
+    # dummy key
+    'api_key':'EMPTY'
+}
+
+Purpose:
+Use local open-source LLM.
+
+
+AUTOGEN + LORA
+--------------
+
+AutoGen
+   |
+   v
+vLLM
+   |
+   v
+Llama 3
+   |
+   v
+LoRA Adapter
+
+Result:
+Company-specific AI behavior.
+
+
+AI SRE PROJECT ARCHITECTURE
+---------------------------
+
+Prometheus Alert
+        |
+        v
+FastAPI
+        |
+        v
+Temporal
+        |
+        v
+AutoGen
+        |
+  +-----+-----+
+  |     |     |
+  v     v     v
+Investigator
+Planner
+Executor
+        |
+        v
+Redis
+        |
+        v
+Qdrant
+        |
+        v
+vLLM
+        |
+        v
+LoRA
+
+
+AUTOGEN VS CREWAI
+-----------------
+CrewAI
+- Simple
+- Easy Learning
+- Role Goal Tool Structure
+
+AutoGen
+- Advanced Conversations
+- Group Chat
+- Enterprise Multi-Agent Systems
+
+
+INTERVIEW ANSWER
+----------------
+Microsoft AutoGen is a multi-agent framework that enables multiple AI agents to collaborate through structured conversations. It supports Assistant Agents, User Proxy Agents, Group Chats, tool integration, memory systems, and enterprise workflows. AutoGen can integrate with FastAPI, Redis, Qdrant, Temporal, Ray, vLLM, and LoRA to build production Agentic AI platforms.
+
+MEMORY FORMULA
+--------------
+CrewAI = Simple Multi-Agent
+AutoGen = Advanced Multi-Agent
+Temporal = Workflow Brain
+Ray = Distributed Execution
+vLLM = LLM Server
+LoRA = Model Customization
+Qdrant = Memory
+
+
+
+========================
+
+
+Agent-to-Agent (A2A) - Complete Beginner Guide With Comments
+============================================================
+
+WHAT IS A2A?
+------------
+A2A means Agent-to-Agent Communication.
+
+Simple Meaning:
+
+One AI Agent
+      |
+      v
+Another AI Agent
+
+Agents communicate directly without human involvement.
+
+
+WHY DO WE NEED A2A?
+-------------------
+Without A2A:
+
+Investigator Agent
+       |
+       v
+Human
+       |
+       v
+Planner Agent
+
+Slow process.
+
+With A2A:
+
+Investigator Agent
+       |
+       v
+Planner Agent
+       |
+       v
+Executor Agent
+
+Fast and automated.
+
+
+A2A VS MCP
+----------
+MCP:
+
+Agent
+ |
+ v
+Tool
+
+Purpose:
+Agent talks to tools.
+
+A2A:
+
+Agent
+ |
+ v
+Agent
+
+Purpose:
+Agents talk to other agents.
+
+Memory Formula:
+
+MCP = Agent ↔ Tool
+A2A = Agent ↔ Agent
+
+
+REAL SRE EXAMPLE
+----------------
+Incident:
+
+Payment Service Down
+
+Workflow:
+
+Investigator
+      |
+      v
+Planner
+      |
+      v
+Executor
+
+Investigator finds:
+
+{
+  "cause": "OOM"
+}
+
+Planner creates:
+
+{
+  "plan": "Increase Memory"
+}
+
+Executor applies fix.
+
+
+A2A MESSAGE FORMAT
+------------------
+
+{
+  "sender": "Investigator",
+  "receiver": "Planner",
+  "cause": "OOM"
+}
+
+Explanation:
+
+sender   = who sends message
+receiver = who receives message
+cause    = discovered issue
+
+
+BASIC PYTHON A2A EXAMPLE
+------------------------
+
+# investigator agent function
+def investigator():
+
+    # create message dictionary
+    message = {
+
+        # sender name
+        'sender': 'Investigator',
+
+        # target receiver
+        'receiver': 'Planner',
+
+        # root cause discovered
+        'cause': 'OOM'
+    }
+
+    # return message
+    return message
+
+
+PLANNER AGENT EXAMPLE
+---------------------
+
+# planner agent function
+def planner(message):
+
+    # read cause from incoming message
+    cause = message['cause']
+
+    # check issue type
+    if cause == 'OOM':
+
+        # create response
+        return {
+
+            # sender name
+            'sender': 'Planner',
+
+            # target receiver
+            'receiver': 'Executor',
+
+            # remediation plan
+            'plan': 'Increase Memory'
+        }
+
+
+EXECUTOR AGENT EXAMPLE
+----------------------
+
+# executor agent function
+def executor(message):
+
+    # return execution result
+    return {
+
+        # execution status
+        'status': 'FIXED'
+    }
+
+
+FULL A2A WORKFLOW
+-----------------
+
+# investigator creates first message
+msg1 = investigator()
+
+# planner receives message
+msg2 = planner(msg1)
+
+# executor receives plan
+msg3 = executor(msg2)
+
+# print final result
+print(msg3)
+
+Output:
+
+{
+  'status': 'FIXED'
+}
+
+
+AUTOGEN + A2A
+-------------
+
+Architecture:
+
+Investigator Agent
+        |
+        v
+Planner Agent
+        |
+        v
+Executor Agent
+
+Example:
+
+# send message to planner
+investigator.send(
+
+    # receiver agent
+    planner,
+
+    # message content
+    'Root Cause = OOM'
+)
+
+
+CREWAI + A2A
+------------
+
+Agent A
+   |
+   v
+Agent B
+   |
+   v
+Agent C
+
+Used for workflow handoffs.
+
+
+OPENAI AGENTS SDK + A2A
+-----------------------
+
+# handoff work to another agent
+agent.handoff()
+
+Purpose:
+Transfer responsibility to another agent.
+
+
+TEMPORAL + A2A
+--------------
+
+Temporal
+    |
+    v
+Investigator
+    |
+    v
+Planner
+    |
+    v
+Executor
+
+Temporal tracks workflow.
+A2A transports messages.
+
+
+REDIS + A2A
+-----------
+
+Purpose:
+Store recent communications.
+
+Examples:
+
+Investigator Message
+Planner Response
+Executor Result
+
+
+QDRANT + A2A
+------------
+
+Purpose:
+Store historical agent communications.
+
+Examples:
+
+Payment OOM
+Inventory OOM
+Database Crash
+
+Qdrant helps agents learn from past incidents.
+
+
+RAY + A2A
+---------
+
+Without Ray:
+
+One Agent Team
+
+With Ray:
+
+100 Agent Teams
+
+A2A conversations execute simultaneously.
+
+
+VLLM + A2A
+----------
+
+Agent
+ |
+ v
+vLLM
+ |
+ v
+Llama 3
+
+Each agent uses a shared model server.
+
+
+COMPLETE AI SRE ARCHITECTURE
+----------------------------
+
+Prometheus Alert
+        |
+        v
+FastAPI
+        |
+        v
+Temporal
+        |
+        v
+A2A Communication Layer
+        |
+   +----+----+
+   |    |    |
+   v    v    v
+Investigator
+Planner
+Executor
+        |
+        v
+Redis
+        |
+        v
+Qdrant
+        |
+        v
+vLLM
+        |
+        v
+LoRA
+        |
+        v
+Kubernetes
+
+
+INTERVIEW ANSWER
+----------------
+Agent-to-Agent (A2A) communication is a design pattern where autonomous AI agents exchange structured messages directly. In an AI SRE platform, Investigator, Planner, and Executor agents collaborate using A2A messages. A2A complements MCP because MCP connects agents to tools, while A2A connects agents to other agents. Combined with Temporal, Redis, Qdrant, Ray, and vLLM, A2A enables scalable enterprise multi-agent systems.
+
+
+MEMORY FORMULA
+--------------
+MCP      = Agent ↔ Tool
+A2A      = Agent ↔ Agent
+CrewAI   = Agent Framework
+AutoGen  = Multi-Agent Conversations
+Temporal = Workflow Brain
+Ray      = Distributed Execution
+vLLM     = Model Server
+LoRA     = Custom Knowledge
+Qdrant   = Long-Term Memory
+Redis    = Short-Term Memory
+=====================
+
+
+Vector Search Optimization - Complete Beginner Guide With Code & Comments
+=====================================================================
+
+WHAT IS VECTOR SEARCH OPTIMIZATION?
+-----------------------------------
+Vector Search Optimization is the process of improving:
+
+- Search Speed
+- Search Accuracy
+- Search Scalability
+- Search Cost
+
+Used In:
+
+- Qdrant
+- Pinecone
+- Milvus
+- Weaviate
+- FAISS
+- GraphRAG
+- Enterprise RAG Systems
+
+
+BASIC VECTOR SEARCH FLOW
+------------------------
+
+User Question
+      |
+      v
+Embedding Model
+      |
+      v
+Vector Search
+      |
+      v
+Top Documents
+      |
+      v
+LLM Answer
+
+
+WHY OPTIMIZATION IS IMPORTANT?
+------------------------------
+Without Optimization:
+
+10 Million Vectors
+       |
+       v
+Slow Search
+
+With Optimization:
+
+10 Million Vectors
+       |
+       v
+Fast Retrieval
+
+
+OPTIMIZATION #1 - BETTER EMBEDDINGS
+-----------------------------------
+Recommended Models:
+
+- BAAI/bge-large-en
+- text-embedding-3-large
+- e5-large-v2
+
+Bad embeddings return irrelevant documents.
+Good embeddings return highly relevant documents.
+
+
+OPTIMIZATION #2 - CHUNKING
+--------------------------
+Bad Chunk:
+
+5000 words in one chunk
+
+Problem:
+Too much information.
+
+Good Chunk:
+
+300-700 tokens
+
+Recommended:
+512 tokens with 20% overlap.
+
+
+CHUNKING EXAMPLE
+----------------
+
+# sample text
+text = "Large Kubernetes troubleshooting document"
+
+# chunk size
+chunk_size = 512
+
+# overlap percentage
+overlap = 100
+
+# explanation
+# Split document into smaller pieces
+# for more accurate retrieval.
+
+
+OPTIMIZATION #3 - METADATA FILTERING
+------------------------------------
+Purpose:
+Reduce search space.
+
+Sample Metadata:
+
+{
+    'service':'payment',
+    'environment':'prod'
+}
+
+
+QDRANT FILTER EXAMPLE
+---------------------
+
+# search qdrant database
+result = client.search(
+
+    # collection name
+    collection_name='incidents',
+
+    # query vector
+    query_vector=vector,
+
+    # maximum results
+    limit=5,
+
+    # metadata filter
+    query_filter={
+
+        # required conditions
+        'must':[
+
+            {
+                # metadata column
+                'key':'service',
+
+                # match condition
+                'match':{
+
+                    # required value
+                    'value':'payment'
+                }
+            }
+        ]
+    }
+)
+
+
+OPTIMIZATION #4 - HNSW INDEX
+----------------------------
+HNSW Means:
+
+Hierarchical Navigable Small World
+
+Purpose:
+
+- Faster Search
+- Approximate Nearest Neighbors
+- Large Scale Retrieval
+
+Without HNSW:
+
+Check Every Vector
+
+With HNSW:
+
+Navigate Smartly
+
+Like Book Index.
+
+
+QDRANT HNSW CONFIGURATION
+-------------------------
+
+# create collection
+client.recreate_collection(
+
+    # collection name
+    collection_name='incidents',
+
+    # vector settings
+    vectors_config={
+        'size':384,
+        'distance':'Cosine'
+    },
+
+    # HNSW configuration
+    hnsw_config={
+
+        # connections per node
+        'm':16,
+
+        # construction size
+        'ef_construct':100
+    }
+)
+
+
+OPTIMIZATION #5 - HYBRID SEARCH
+--------------------------------
+Purpose:
+Combine:
+
+BM25 Search
++
+Vector Search
+
+Architecture:
+
+Question
+    |
+    v
+BM25
+    |
+    v
+Vector Search
+    |
+    v
+Combined Results
+
+
+HYBRID SEARCH EXAMPLE
+---------------------
+
+# keyword search results
+keyword_results = bm25_search(query)
+
+# vector search results
+vector_results = vector_search(query)
+
+# combine both results
+combined_results = keyword_results + vector_results
+
+
+OPTIMIZATION #6 - RERANKING
+---------------------------
+Purpose:
+Select best documents.
+
+Process:
+
+Top 100 Documents
+       |
+       v
+Reranker Model
+       |
+       v
+Best 5 Documents
+
+Popular Models:
+
+- bge-reranker-large
+- Cohere Rerank
+
+
+RERANKING EXAMPLE
+-----------------
+
+# retrieve top 100
+results = search(query)
+
+# rerank results
+reranked = reranker.rank(
+
+    # question
+    query,
+
+    # retrieved documents
+    results
+)
+
+# top results selected
+print(reranked)
+
+
+OPTIMIZATION #7 - QUANTIZATION
+------------------------------
+Purpose:
+Reduce RAM and storage usage.
+
+Example:
+
+Float32
+   |
+   v
+Int8
+
+Benefits:
+
+- Lower Memory
+- Faster Search
+- Reduced Cost
+
+
+OPTIMIZATION #8 - MULTI VECTOR RETRIEVAL
+-----------------------------------------
+Store:
+
+Title Embedding
+Content Embedding
+Summary Embedding
+
+Benefits:
+
+More Accurate Retrieval.
+
+
+OPTIMIZATION #9 - COLLECTION PARTITIONING
+------------------------------------------
+Bad:
+
+One collection for everything.
+
+Good:
+
+Collections:
+ok
+- incidents
+- runbooks
+- tickets
+- logs
+
+
+QDRANT COLLECTION EXAMPLE
+-------------------------
+
+# incident collection
+incident_collection
+
+# runbook collection
+runbook_collection
+
+# ticket collection
+ticket_collection
+
+
+OPTIMIZATION #10 - REDIS CACHING
+---------------------------------
+Purpose:
+Avoid repeated searches.
+
+Architecture:
+
+Question
+   |
+   v
+Redis Cache
+   |
+   v
+Qdrant
+
+
+CACHE EXAMPLE
+-------------
+
+# check cache first
+cached = redis.get(query)
+
+# if found
+if cached:
+
+    # return cached result
+    return cached
+
+# otherwise search qdrant
+result = search_qdrant(query)
+
+# save result into redis
+redis.set(query, result)
+
+
+FULL PRODUCTION ARCHITECTURE
+----------------------------
+
+User
+ |
+ v
+FastAPI
+ |
+ v
+Redis Cache
+ |
+ v
+Embedding Model
+ |
+ v
+Qdrant
+ |
+ v
+HNSW Index
+ |
+ v
+Metadata Filter
+ |
+ v
+Hybrid Search
+ |
+ v
+Reranker
+ |
+ v
+Top Documents
+ |
+ v
+vLLM
+ |
+ v
+Answer
+
+
+AI SRE USE CASE
+---------------
+Question:
+
+Payment Service CrashLoopBackOff
+
+Flow:
+
+Metadata Filter
+      |
+      v
+Service = Payment
+
+Environment = Prod
+      |
+      v
+Vector Search
+      |
+      v
+Reranker
+      |
+      v
+Best Incident
+      |
+      v
+vLLM Response
+
+
+INTERVIEW ANSWER
+----------------
+Vector Search Optimization improves retrieval speed, accuracy, and scalability in RAG systems. Important techniques include high-quality embeddings, chunk optimization, metadata filtering, HNSW indexing, hybrid search, reranking, quantization, collection partitioning, and Redis caching. In enterprise Qdrant deployments, these optimizations allow efficient retrieval from millions of vectors while maintaining low latency and high relevance.
+
+
+MEMORY FORMULA
+--------------
+Better Embeddings
+      +
+Chunking
+      +
+Metadata Filtering
+      +
+HNSW
+      +
+Hybrid Search
+      +
+Reranking
+      +
+Caching
+      =
+Fast Enterprise Search
+
+
+
+================================
+
+
+MLflow Complete Beginner Guide With Code & Comments
+==================================================
+
+WHAT IS MLFLOW?
+---------------
+MLflow is an open-source MLOps platform.
+
+Purpose:
+- Track Experiments
+- Store Metrics
+- Save Models
+- Version Models
+- Deploy Models
+- Manage AI Lifecycle
+
+Easy Formula:
+
+GitHub = Code Versioning
+MLflow = Model Versioning
+
+
+MLFLOW COMPONENTS
+-----------------
+1. MLflow Tracking
+2. MLflow Projects
+3. MLflow Model Registry
+4. MLflow Deployment
+
+
+INSTALLATION
+------------
+Create virtual environment:
+
+python3 -m venv venv
+
+Activate environment:
+
+source venv/bin/activate
+
+Install MLflow:
+
+pip install mlflow
+
+Verify Installation:
+
+mlflow --version
+
+
+START MLFLOW UI
+---------------
+Start dashboard:
+
+mlflow ui
+
+Open browser:
+
+http://localhost:5000
+
+
+FIRST MLFLOW PROGRAM
+--------------------
+
+# import MLflow package
+import mlflow
+
+# start experiment run
+with mlflow.start_run():
+
+    # save learning rate parameter
+    mlflow.log_param(
+        'learning_rate',
+        0.001
+    )
+
+    # save epoch count
+    mlflow.log_param(
+        'epochs',
+        10
+    )
+
+    # save accuracy metric
+    mlflow.log_metric(
+        'accuracy',
+        95
+    )
+
+    # save loss metric
+    mlflow.log_metric(
+        'loss',
+        0.12
+    )
+
+    # confirmation message
+    print('Experiment Saved')
+
+
+EXPLANATION
+-----------
+mlflow.start_run()
+
+Purpose:
+Create experiment execution.
+
+mlflow.log_param()
+
+Purpose:
+Store training configuration.
+
+Examples:
+- learning_rate
+- batch_size
+- epochs
+
+mlflow.log_metric()
+
+Purpose:
+Store model performance.
+
+Examples:
+- accuracy
+- precision
+- recall
+- F1 score
+- loss
+
+
+MODEL TRACKING EXAMPLE
+----------------------
+
+# import mlflow
+import mlflow
+
+# start run
+with mlflow.start_run():
+
+    # model type
+    mlflow.log_param(
+        'model',
+        'llama3-lora'
+    )
+
+    # dataset name
+    mlflow.log_param(
+        'dataset',
+        'incident_dataset_v1'
+    )
+
+    # evaluation score
+    mlflow.log_metric(
+        'faithfulness',
+        0.93
+    )
+
+    # evaluation score
+    mlflow.log_metric(
+        'correctness',
+        0.91
+    )
+
+
+ARTIFACT LOGGING
+----------------
+Artifacts are files.
+
+Examples:
+- model files
+- reports
+- plots
+- evaluation results
+
+Code:
+
+# import mlflow
+import mlflow
+
+# save local file to mlflow
+mlflow.log_artifact(
+    'report.txt'
+)
+
+
+CREATE EXPERIMENT
+-----------------
+
+# import mlflow
+import mlflow
+
+# create experiment
+mlflow.set_experiment(
+    'SRE_LoRA_Training'
+)
+
+Purpose:
+Group similar runs together.
+
+
+MODEL REGISTRY
+--------------
+Purpose:
+Store model versions.
+
+Stages:
+- Development
+- Staging
+- Production
+- Archived
+
+Example Models:
+
+Llama3-LoRA-v1
+Llama3-LoRA-v2
+Llama3-LoRA-v3
+
+
+REGISTER MODEL
+--------------
+
+# import mlflow
+import mlflow
+
+# register trained model
+mlflow.register_model(
+
+    # run path
+    'runs:/123/model',
+
+    # model name
+    'sre_llama_model'
+)
+
+
+SERVE MODEL
+-----------
+
+mlflow models serve \
+-m models:/sre_llama_model/Production
+
+Purpose:
+Create REST API endpoint.
+
+
+LOADED MODEL ARCHITECTURE
+-------------------------
+
+User
+ |
+ v
+MLflow Registry
+ |
+ v
+Production Model
+ |
+ v
+Prediction
+
+
+MLFLOW + LORA
+-------------
+
+LoRA Training
+      |
+      v
+MLflow Tracking
+      |
+      v
+Model Registry
+      |
+      v
+Deployment
+
+Benefits:
+- Compare LoRA versions
+- Track GPU usage
+- Track datasets
+- Track hyperparameters
+
+
+MLFLOW + VLLM
+-------------
+
+LoRA Model
+     |
+     v
+MLflow Registry
+     |
+     v
+vLLM Server
+     |
+     v
+Inference
+
+
+MLFLOW + RAY
+------------
+
+Ray Distributed Training
+          |
+          v
+MLflow Tracking
+          |
+          v
+Metrics Dashboard
+
+
+MLFLOW + FASTAPI
+----------------
+
+FastAPI
+    |
+    v
+MLflow Registry
+    |
+    v
+Model Version
+    |
+    v
+Prediction
+
+
+MLFLOW + AI SRE COPILOT
+-----------------------
+
+Prometheus Alert
+       |
+       v
+FastAPI
+       |
+       v
+Temporal
+       |
+       v
+CrewAI / AutoGen
+       |
+       v
+Qdrant
+       |
+       v
+LoRA
+       |
+       v
+MLflow Registry
+       |
+       v
+vLLM
+
+
+MCP PROJECT VS MLFLOW PROJECT
+-----------------------------
+
+Old Project:
+
+User
+ |
+ v
+FastAPI
+ |
+ v
+MCP
+ |
+ v
+GraphRAG
+ |
+ v
+PostgreSQL
+
+New Enterprise Project:
+
+FastAPI
+ |
+ v
+CrewAI
+ |
+ v
+Temporal
+ |
+ v
+Qdrant
+ |
+ v
+LoRA
+ |
+ v
+MLflow
+ |
+ v
+vLLM
+
+
+INTERVIEW ANSWER
+----------------
+MLflow is an open-source MLOps platform used for experiment tracking, model registry, deployment, and lifecycle management. It helps teams track training runs, compare models, manage model versions, and promote models from development to production. MLflow integrates with LoRA, vLLM, Ray, FastAPI, Kubeflow, and modern AI platforms.
+
+
+MEMORY FORMULA
+--------------
+MLflow = Track Models
+LoRA = Train Models
+vLLM = Serve Models
+Ray = Scale Training
+Kubeflow = ML Pipelines
+Temporal = Workflow Orchestration
+Qdrant = Memory
+CrewAI = Agents
+
+
+===================================
+
+
+
+Kubeflow Complete Beginner Guide With Code & Comments
+====================================================
+
+WHAT IS KUBEFLOW?
+-----------------
+Kubeflow is an open-source Machine Learning (ML) platform built on Kubernetes.
+
+Purpose:
+- Build ML Pipelines
+- Train Models
+- Tune Hyperparameters
+- Deploy Models
+- Manage End-to-End MLOps
+
+Easy Formula:
+
+MLflow = Track Models
+Kubeflow = Run ML Pipelines
+
+
+KUBEFLOW ARCHITECTURE
+---------------------
+
+Dataset
+   |
+   v
+Kubeflow Pipeline
+   |
+   v
+Training
+   |
+   v
+Evaluation
+   |
+   v
+MLflow Registry
+   |
+   v
+Deployment
+
+
+MAJOR COMPONENTS
+----------------
+1. Kubeflow Pipelines
+2. Katib
+3. Training Operator
+4. Notebook Server
+5. Central Dashboard
+
+
+PREREQUISITES
+-------------
+Install:
+
+- Docker
+- Kubernetes (Minikube or K8s Cluster)
+- kubectl
+- Helm
+
+Verify:
+
+kubectl get nodes
+helm version
+
+
+INSTALL KUBEFLOW SDK
+--------------------
+
+# create virtual environment
+python3 -m venv venv
+
+# activate environment
+source venv/bin/activate
+
+# install kubeflow sdk
+pip install kfp
+
+# verify installation
+python -c "import kfp; print('Kubeflow OK')"
+
+
+FIRST KUBEFLOW PIPELINE
+-----------------------
+
+# import kubeflow sdk
+from kfp import dsl
+
+# create first component
+@dsl.component
+
+def load_data():
+
+    # print message
+    print('Loading Dataset')
+
+# create training component
+@dsl.component
+
+def train_model():
+
+    # print message
+    print('Training Model')
+
+# create evaluation component
+@dsl.component
+
+def evaluate_model():
+
+    # print message
+    print('Evaluating Model')
+
+# create pipeline
+@dsl.pipeline(
+
+    # pipeline name
+    name='sre-training-pipeline'
+)
+
+def sre_pipeline():
+
+    # step 1
+    load_data()
+
+    # step 2
+    train_model()
+
+    # step 3
+    evaluate_model()
+
+
+PIPELINE FLOW
+-------------
+
+Load Data
+    |
+    v
+Train Model
+    |
+    v
+Evaluate Model
+
+
+PIPELINE COMPILATION
+--------------------
+
+# import compiler
+from kfp import compiler
+
+# generate pipeline yaml
+compiler.Compiler().compile(
+
+    # pipeline function
+    sre_pipeline,
+
+    # output yaml file
+    'sre_pipeline.yaml'
+)
+
+
+KATIB (HYPERPARAMETER TUNING)
+-----------------------------
+Purpose:
+Automatically find:
+
+- Best Learning Rate
+- Best Batch Size
+- Best Epoch Count
+
+Without Katib:
+
+Manual Trial and Error
+
+With Katib:
+
+100 Experiments
+      |
+      v
+Best Parameters
+
+
+TRAINING OPERATOR
+-----------------
+Purpose:
+Run distributed training jobs.
+
+Supports:
+
+- PyTorch
+- TensorFlow
+- XGBoost
+
+Architecture:
+
+Kubernetes
+     |
+     v
+Training Operator
+     |
+     v
+GPU Training
+
+
+NOTEBOOK SERVER
+---------------
+Purpose:
+Provide Jupyter notebooks inside Kubernetes.
+
+Benefits:
+
+- Shared Environment
+- Cloud Based
+- Team Collaboration
+
+
+KUBEFLOW + MLFLOW
+-----------------
+
+Kubeflow
+    |
+    v
+Train Models
+
+MLflow
+    |
+    v
+Track Experiments
+
+
+Example:
+
+LoRA Training
+      |
+      v
+Kubeflow Pipeline
+      |
+      v
+MLflow Tracking
+
+
+KUBEFLOW + RAY
+--------------
+
+Kubeflow Pipeline
+        |
+        v
+Ray Cluster
+        |
+        v
+Distributed Training
+
+Purpose:
+Scale training across CPUs and GPUs.
+
+
+KUBEFLOW + LORA
+---------------
+
+Dataset
+    |
+    v
+Kubeflow Pipeline
+    |
+    v
+LoRA Training
+    |
+    v
+Evaluation
+    |
+    v
+MLflow Registry
+
+
+KUBEFLOW + VLLM
+---------------
+
+Training Complete
+        |
+        v
+Kubeflow
+        |
+        v
+Deploy vLLM
+        |
+        v
+Serve Llama 3
+
+
+KUBEFLOW + AI SRE PLATFORM
+--------------------------
+
+Prometheus Alert
+        |
+        v
+FastAPI
+        |
+        v
+CrewAI / AutoGen
+        |
+        v
+Temporal
+        |
+        v
+Qdrant
+        |
+        v
+LoRA
+        |
+        v
+MLflow
+        |
+        v
+Kubeflow
+        |
+        v
+vLLM
+
+
+KUBEFLOW VS MLFLOW
+------------------
+
+MLflow:
+- Experiment Tracking
+- Model Registry
+- Metrics
+
+Kubeflow:
+- Pipelines
+- Automation
+- Kubernetes ML Platform
+
+
+KUBEFLOW VS SAGEMAKER
+---------------------
+
+Kubeflow:
+- Open Source
+- Kubernetes Native
+- More Flexible
+
+SageMaker:
+- AWS Managed
+- Easier Setup
+- AWS Ecosystem
+
+
+REAL ENTERPRISE ARCHITECTURE
+----------------------------
+
+GitHub
+   |
+   v
+GitHub Actions
+   |
+   v
+Kubeflow Pipeline
+   |
+   v
+Ray Training
+   |
+   v
+LoRA
+   |
+   v
+MLflow Registry
+   |
+   v
+vLLM
+   |
+   v
+Kubernetes
+   |
+   v
+Production
+
+
+INTERVIEW ANSWER
+----------------
+Kubeflow is an open-source machine learning platform built on Kubernetes. It provides pipeline orchestration, distributed training, notebook management, hyperparameter tuning through Katib, and model deployment capabilities. In enterprise AI systems, Kubeflow integrates with MLflow, Ray, LoRA, and vLLM to automate the complete machine learning lifecycle.
+
+
+MEMORY FORMULA
+--------------
+CrewAI = Agents
+Temporal = Workflow
+Qdrant = Memory
+LoRA = Training
+MLflow = Model Tracking
+Kubeflow = MLOps Platform
+Ray = Distributed Computing
+vLLM = Model Serving
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
