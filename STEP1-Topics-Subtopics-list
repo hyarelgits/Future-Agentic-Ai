@@ -1,0 +1,347 @@
+Topics & Subtopics
+1. Ubuntu & Linux
+Ubuntu Installation
+Linux Commands
+File System
+Permissions
+SSH
+Package Management
+2. Python
+Variables
+Functions
+Classes
+Modules
+Packages
+Virtual Environment
+Pip
+Requirements.txt
+3. Git & GitHub
+Repository
+Branches
+Commits
+Merge
+Pull Requests
+GitHub Actions
+4. FastAPI
+FastAPI App
+Routes
+GET API
+POST API
+PUT API
+DELETE API
+Pydantic
+Request Models
+Response Models
+Middleware
+CORS
+Swagger UI
+OpenAPI
+5. REST APIs
+HTTP Methods
+Request
+Response
+Headers
+Status Codes
+JSON
+6. PostgreSQL
+Database
+Table
+Query
+Join
+Index
+Stored Procedures
+7. Redis
+Key Value Store
+Caching
+Session Storage
+Short-Term Memory
+Chat Memory
+Message Queue
+8. Qdrant
+Vector Database
+Embeddings
+Similarity Search
+Semantic Search
+Long-Term Memory
+9. RAG
+Retrieval
+Embeddings
+Chunking
+Vector Search
+Context Injection
+Generation
+10. GraphRAG
+Knowledge Graph
+Neo4j
+Entity Extraction
+Relationship Mapping
+Graph Search
+11. Vector Search Optimization
+Embeddings
+Chunking
+Metadata Filtering
+Hybrid Search
+HNSW
+Reranking
+Quantization
+Multi-Vector Retrieval
+Collections
+Caching
+12. CrewAI
+Agents
+Role
+Goal
+Tools
+Memory
+Crew
+Flows
+Tasks
+Agent Types
+Investigator Agent
+Planner Agent
+Executor Agent
+Reviewer Agent
+Supervisor Agent
+13. AutoGen
+AssistantAgent
+UserProxyAgent
+GroupChat
+GroupChatManager
+Agent Collaboration
+Tool Calling
+14. A2A (Agent-to-Agent)
+Agent Messaging
+Agent Handoffs
+Agent Collaboration
+Message Routing
+Multi-Agent Communication
+15. OpenAI Agents SDK
+Agents
+Tools
+Memory
+Handoffs
+Tracing
+Multi-Agent Workflows
+16. MCP
+MCP Server
+MCP Client
+Tools
+Resources
+Prompts
+Tool Integration
+17. Temporal
+Workflow
+Activities
+Retry
+Scheduling
+State Persistence
+Long Running Processes
+18. LangGraph
+State Graph
+Nodes
+Edges
+Agent Workflows
+Graph Execution
+19. LLM Fundamentals
+GPT
+Llama
+Qwen
+Gemma
+Mistral
+DeepSeek
+20. vLLM
+Model Serving
+Continuous Batching
+OpenAI Compatible API
+GPU Optimization
+Inference
+21. LoRA
+Fine-Tuning
+PEFT
+Adapters
+TRL
+Transformers
+Datasets
+22. Ray
+Distributed Computing
+Ray Tasks
+Ray Actors
+Ray Serve
+Ray Cluster
+Head Node
+Worker Nodes
+GPU Scheduling
+23. Langfuse
+Tracing
+Observability
+Cost Tracking
+Prompt Monitoring
+Token Tracking
+24. OpenTelemetry
+Distributed Tracing
+Performance Monitoring
+Application Metrics
+25. Prometheus
+Metrics
+Alerts
+Monitoring
+Time Series Database
+26. Grafana
+Dashboards
+Visualization
+Monitoring
+27. Arize Phoenix
+Hallucination Detection
+Tracing
+Evaluation
+28. DeepEval
+Faithfulness
+Correctness
+Evaluation
+Testing
+29. RAGAS
+Context Precision
+Context Recall
+Faithfulness
+Answer Relevancy
+30. TruLens
+AI Evaluation
+Quality Scoring
+Monitoring
+31. Docker
+Dockerfile
+Image
+Container
+Network
+Volumes
+32. Docker Compose
+Multi-Container Applications
+Service Orchestration
+33. Kubernetes
+Pod
+Deployment
+Service
+Namespace
+ConfigMap
+Secret
+Ingress
+HPA
+34. Helm
+Chart
+Values.yaml
+Templates
+Releases
+Upgrade
+Rollback
+35. ArgoCD
+GitOps
+Sync
+Rollback
+Self-Healing
+Multi-Cluster Deployment
+36. MLflow
+Tracking
+Experiments
+Metrics
+Parameters
+Artifacts
+Model Registry
+Model Serving
+37. Kubeflow
+Pipelines
+Katib
+Training Operator
+Notebook Server
+Dashboard
+38. SageMaker
+Training Jobs
+Endpoints
+Pipelines
+Model Registry
+Feature Store
+39. CI/CD
+GitHub Actions
+Jenkins
+Build
+Test
+Deploy
+40. MLOps
+Model Lifecycle
+Model Registry
+Experiment Tracking
+Deployment
+Monitoring
+41. LLMOps
+Prompt Management
+Model Monitoring
+Cost Optimization
+Evaluation
+42. Knowledge Graph AI
+Neo4j
+Ontology
+Entity Resolution
+Graph Search
+43. Security
+Guardrails
+Prompt Injection
+RBAC
+Secrets Management
+Authentication
+Authorization
+44. Enterprise AI Architecture
+Multi-Agent Systems
+Agent Memory
+Agent Orchestration
+Distributed AI
+AI Observability
+AI Evaluation
+AI Deployment
+45. AI SRE Copilot Project
+Infrastructure
+Kubernetes
+Docker
+Helm
+ArgoCD
+Prometheus
+Grafana
+AI Layer
+CrewAI
+AutoGen
+A2A
+OpenAI Agents SDK
+Temporal
+Ray
+Memory Layer
+Redis
+Qdrant
+LLM Layer
+vLLM
+LoRA
+Llama 3
+MLOps Layer
+MLflow
+Kubeflow
+SageMaker
+Observability Layer
+Langfuse
+OpenTelemetry
+Arize Phoenix
+Evaluation Layer
+DeepEval
+RAGAS
+TruLens
+Deployment Layer
+GitHub Actions
+Jenkins
+Kubernetes
+ArgoCD
+Advanced Topics
+Multi-Agent Systems
+Agentic RAG
+Autonomous AI
+LLMOps
+MLOps
+GitOps
+AIOps
+SRE Copilot
+Enterprise AI Platform
