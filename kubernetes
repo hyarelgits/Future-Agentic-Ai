@@ -153,3 +153,178 @@ Shell
 minikube start --driver=docker
 
 That should resolve the localhost:8080 connection refused error.
+
+
+
+==========================
+
+
+Good progress ✅
+
+Your Kubernetes deployment was created:
+
+Plain Text
+deployment.apps/sre-copilot created
+
+But the pod status is:
+
+Plain Text
+STATUS
+ErrImagePull
+
+This means Kubernetes cannot find or download the Docker image.
+
+What Happened?
+
+Your pod:
+
+Plain Text
+sre-copilot-5b54bb7b6f-552xf
+
+is trying to start using:
+
+YAML
+image: sre-copilot:latest
+
+but Kubernetes cannot access that image.
+
+Check Exact Error
+
+Run:
+
+Shell
+kubectl describe pod sre-copilot-5b54bb7b6f-552xf
+
+Look near bottom for:
+
+Plain Text
+Events:
+
+You'll probably see:
+
+Plain Text
+Failed to pull image
+
+or
+
+Plain Text
+ImagePullBackOff
+ 
+Most Common Cause (Minikube)
+
+Earlier you built the image using:
+
+Shell
+docker build -t sre-copilot .
+
+But Kubernetes is looking inside the Minikube Docker environment, not your normal Docker environment.
+
+Fix #1 (Recommended)
+
+Connect terminal to Minikube Docker:
+
+Shell
+eval $(minikube docker-env)
+
+Verify:
+
+Shell
+docker images
+
+If you do NOT see:
+
+Plain Text
+sre-copilot
+ 
+
+build it again:
+
+Shell
+docker build -t sre-copilot:latest .
+
+Verify:
+
+Shell
+docker images | grep sre-copilot
+
+Expected:
+
+Plain Text
+sre-copilot latest
+Restart Deployment
+
+Delete pod:
+
+Shell
+kubectl delete pod sre-copilot-5b54bb7b6f-552xf
+
+or
+
+Shell
+kubectl rollout restart deployment sre-copilot
+
+Then verify:
+
+Shell
+kubectl get pods
+ 
+
+Expected:
+
+Plain Text
+NAME READY STATUS
+ 
+sre-copilot-xxxxxx 1/1 Running
+Check Deployment YAML
+
+Show image line:
+
+Shell
+cat k8s/deployment.yaml
+
+Verify:
+
+YAML
+image: sre-copilot:latest
+ 
+Verify Current Situation
+
+Run these 3 commands and check output:
+
+Shell
+kubectl describe pod sre-copilot-5b54bb7b6f-552xf
+Shell
+docker images | grep sre-copilot
+Shell
+minikube status
+Most likely answer
+
+Your Kubernetes cluster is working ✅
+
+Your deployment was created ✅
+
+Your pod was created ✅
+
+Only the Docker image is not available to Minikube ❌
+
+The usual fix is:
+
+Shell
+eval $(minikube docker-env)
+ 
+docker build -t sre-copilot:latest .
+ 
+kubectl rollout restart deployment sre-copilot
+ 
+kubectl get pods
+
+After that, the pod should move from:
+
+Plain Text
+ErrImagePull
+
+to:
+
+Plain Text
+Running
+
