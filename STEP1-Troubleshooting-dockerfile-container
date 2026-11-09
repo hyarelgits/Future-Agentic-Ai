@@ -1,0 +1,180 @@
+TROUBLESHOOTING GUIDE #1 - DOCKER PORT CONFLICT
+==============================================
+
+ISSUE
+-----
+Error Message:
+
+failed to bind host port 0.0.0.0:8002
+Address already in use
+
+Meaning:
+
+Another application or container is already using port 8002.
+Docker cannot use the same port twice.
+
+
+ROOT CAUSE
+----------
+Possible causes:
+
+1. FastAPI/Uvicorn already running
+2. Existing Docker container using port 8002
+3. Another application using port 8002
+4. Previous container not stopped properly
+
+
+CHECK WHAT IS USING PORT 8002
+-----------------------------
+
+# show process using port 8002
+sudo lsof -i :8002
+
+OR
+
+# show network listeners
+sudo netstat -tulpn | grep 8002
+
+Expected Output:
+
+python
+uvicorn
+docker-proxy
+or another PID
+
+
+CHECK RUNNING CONTAINERS
+------------------------
+
+# list running containers
+docker ps
+
+Look for:
+
+0.0.0.0:8002->8002/tcp
+
+If found:
+
+Container is already using port 8002.
+
+
+STOP CONTAINER
+--------------
+
+# stop container
+docker stop CONTAINER_ID
+
+Example:
+
+docker stop abc123
+
+
+STOP ALL CONTAINERS
+-------------------
+
+# stop all running containers
+docker stop $(docker ps -q)
+
+
+REMOVE STOPPED CONTAINERS
+-------------------------
+
+# remove stopped containers
+docker container prune
+
+
+ALTERNATIVE SOLUTION
+--------------------
+Use another port.
+
+Incorrect:
+
+docker run -p 8003:8003 sre-copilot
+
+Reason:
+
+Application runs on port 8002 inside container.
+
+Correct:
+
+docker run -p 8003:8002 sre-copilot
+
+Meaning:
+
+Host Port 8003
+       |
+       v
+Container Port 8002
+
+
+VERIFY CONTAINER
+----------------
+
+# check container status
+docker ps
+
+Expected:
+
+0.0.0.0:8003->8002/tcp
+
+
+TEST APPLICATION
+----------------
+
+# test application
+curl http://localhost:8003
+
+
+OPEN SWAGGER UI
+---------------
+
+http://localhost:8003/docs
+
+
+VMWARE USERS
+------------
+Find Ubuntu IP:
+
+hostname -I
+
+Example:
+
+192.168.1.100
+
+Open:
+
+http://192.168.1.100:8003/docs
+
+
+SUCCESS CASE
+------------
+Expected Logs:
+
+INFO: Started server process
+INFO: Application startup complete
+INFO: Uvicorn running on http://0.0.0.0:8002
+
+And Docker Mapping:
+
+Host 8003 -> Container 8002
+
+
+LESSON LEARNED
+--------------
+Container Port:
+
+8002
+
+Host Port:
+
+Can be:
+8002
+8003
+8004
+8010
+9000
+
+Rule:
+
+Host Port can be anything free.
+Container Port must match the application port.
