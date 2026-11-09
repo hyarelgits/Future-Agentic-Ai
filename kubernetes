@@ -1,0 +1,155 @@
+The screenshot shows that kubectl is installed correctly, but there is no Kubernetes cluster running.
+
+Error:
+
+Plain Text
+Get "http://localhost:8080/api?timeout=32s":
+dial tcp 127.0.0.1:8080:
+connect: connection refused
+What this means
+Plain Text
+kubectl ✅ Installed
+ 
+Kubernetes Cluster ❌ Not Running
+ 
+API Server ❌ Not Available
+Check kubectl
+
+Run:
+
+Shell
+kubectl version --client
+
+If you see a version, kubectl is fine.
+
+Next Step: Check Minikube
+
+Run:
+
+Shell
+minikube version
+If command not found
+
+Install Minikube:
+
+Shell
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+ 
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+Verify:
+
+Shell
+minikube version
+Start Kubernetes Cluster
+
+Run:
+
+Shell
+minikube start --driver=docker
+
+This is the step you're missing.
+
+Verify Cluster
+
+After startup completes:
+
+Shell
+kubectl cluster-info
+
+Expected:
+
+Plain Text
+Kubernetes control plane is running
+CoreDNS is running
+Verify Node
+
+Run:
+
+Shell
+kubectl get nodes
+
+Expected:
+
+Plain Text
+NAME STATUS
+minikube Ready
+Verify Pods
+
+Run:
+
+Shell
+kubectl get pods -A
+
+Expected pods:
+
+Plain Text
+coredns
+etcd-minikube
+kube-apiserver
+kube-controller-manager
+kube-scheduler
+
+Status should be:
+
+Plain Text
+Running
+Complete Sequence
+Shell
+# Verify Docker
+docker ps
+ 
+# Verify kubectl
+kubectl version --client
+ 
+# Verify Minikube
+minikube version
+ 
+# Start Cluster
+minikube start --driver=docker
+ 
+# Check Cluster
+kubectl cluster-info
+ 
+# Check Nodes
+kubectl get nodes
+ 
+# Check Pods
+kubectl get pods -A
+Important
+
+Do not run:
+
+Shell
+kubectl apply -f deployment.yaml
+
+until:
+
+Shell
+kubectl get nodes
+
+returns:
+
+Plain Text
+Ready
+
+Your current status is:
+
+Plain Text
+Docker ✅
+kubectl ✅
+FastAPI Docker ✅
+Kubernetes Node ❌ Not Started
+Minikube ? Need Verification
+
+Run:
+
+Shell
+minikube version
+
+and if it is installed:
+
+Shell
+minikube start --driver=docker
+
+That should resolve the localhost:8080 connection refused error.
