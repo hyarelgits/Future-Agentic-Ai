@@ -110,7 +110,73 @@ to:
 
 Plain Text
 CLICKHOUSE_URL missing
+==================
 
+
+
+Recommended Fix
+
+Use the official repository directly instead of the release asset:
+
+Shell
+mkdir -p ~/future-ai-sre-copilot/langfuse
+ 
+cd ~/future-ai-sre-copilot/langfuse
+ 
+git clone https://github.com/langfuse/langfuse.git
+
+Then:
+
+Shell
+cd langfuse
+
+Search for compose files:
+
+Shell
+find . -name "*compose*"
+
+or
+
+Shell
+find . -name "*.yml"
+Alternative: Use Official Self-Hosting Documentation
+
+Open:
+
+Plain Text
+https*//langfuse.com/self-host*ng
+
+The current Langfuse version may use a different deployment method than the older docker-compose.yml approach.
+
+Verify Current Situation
+
+You currently have:
+
+Plain Text
+✅ Docker running
+✅ PostgreSQL*running
+✅ Docker network created*✅ Langfuse image*downloaded
+ 
+* CLICKHOUSE_URL missing
+* Standalone container startup fail*
+
+The error:
+
+Plain Text
+*LICKHOUSE_URL is not configured
+``*
+
+confirms Langfuse v3+ requires additional services (typically ClickHouse).
+
+Quick Diagnostic
+
+Before proceeding, check whether Docker Compose is available:
+
+Shell
+docker compose version
+`*
+
+If it returns a version, we can deploy the full Langfuse stack using a compose file instead of manually wiring PostgreSQL and ClickHouse containers.
 You fixed the first issue, and now Langfuse is asking for the second required dependency. The easiest path is to use the official Docker Compose deployment instead of manually creating each container.
 
 create txt for langfuse-postgres connection
