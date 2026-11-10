@@ -1,0 +1,104 @@
+You're very close. The current error is:
+
+Plain Text
+CLICKHOUSE_MIGRATION_URL is not configured
+
+Follow these exact steps.
+
+Step 1: Open docker-compose.yml
+Shell
+cd ~/langfuse-stack
+ 
+nano docker-compose.yml
+Step 2: Find Langfuse Environment Section
+
+environment:
+  DATABASE_URL: postgresql://langfuse:langfuse123@postgres:5432/langfuse
+
+  CLICKHOUSE_URL: http://clickhouse:8123
+
+  CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+
+  CLICKHOUSE_USER: default
+
+  CLICKHOUSE_PASSWORD: ""
+
+  CLICKHOUSE_DB: default
+
+
+Save:
+
+Plain Text
+CTRL + O
+ENTER
+CTRL + X
+Step 3: Stop Existing Containers
+Shell
+docker-compose down
+
+Verify:
+
+Shell
+docker ps
+Step 4: Start Everything Again
+Shell
+docker-compose up -d
+Step 5: Check Containers
+Shell
+docker ps
+
+You should see:
+
+Plain Text
+postgres Up
+clickhouse Up
+langfuse Up
+Step 6: Check Langfuse Logs
+Shell
+docker logs langfuse
+ 
+
+You should no longer see:
+
+Plain Text
+CLICKHOUSE_MIGRATION_URL is not configured
+Step 7: Open Langfuse
+
+Inside Ubuntu:
+
+Plain Text
+http://localhost:3000
+
+From Windows:
+
+Shell
+hostname -I
+
+Example:
+
+Plain Text
+192.168.1.100
+
+Open:
+
+Plain Text
+http://192.168.1.100:3000
+If It Still Fails
+
+Show me:
+
+Shell
+cat docker-compose.yml
+
+and
+
+Shell
+docker ps -a
+
+and
+
+Shell
+docker logs langfuse
+ 
+
+The most likely next issue (if any) will be a ClickHouse connection problem, but first add CLICKHOUSE_MIGRATION_URL and restart t
