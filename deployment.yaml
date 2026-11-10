@@ -1,0 +1,45 @@
+# Kubernetes API version
+apiVersion: apps/v1
+
+# deployment resource
+kind: Deployment
+
+# deployment metadata
+metadata:
+
+  # deployment name
+  name: sre-copilot
+
+# deployment specification
+spec:
+
+  # pod count
+  replicas: 1
+
+  # pod selector
+  selector:
+
+    matchLabels:
+
+      app: sre-copilot
+
+  # pod template
+  template:
+
+    metadata:
+
+      labels:
+
+        app: sre-copilot
+
+    spec:
+
+      containers:
+
+      - name: sre-copilot
+
+        image: hyareldocker1/sre-copilot:latest
+
+        ports:
+
+        - containerPort: 8002
