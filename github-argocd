@@ -1,0 +1,120 @@
+From your screenshot:
+
+Plain Text
+Writing objects: 386.84 MiB
+
+GitHub can accept a repository around 387 MB, but:
+
+Pushes may timeout on slow networks
+Large binary files slow cloning
+ArgoCD deployments become slower
+Team collaboration becomes harder
+What NOT to Push
+Plain Text
+venv/
+__pycache__/
+.minikube/
+.kube/
+*.log
+*.tar
+*.zip
+*.iso
+*.vmdk
+minikube-linux-amd64
+
+Example:
+
+Plain Text
+minikube-linux-amd64
+
+alone is typically around 100 MB+ and should never be committed.
+
+Find Large Files
+Shell
+find . -type f -size +50M
+
+Very large files:
+
+Shell
+find . -type f -size +100M
+Check Folder Sizes
+Shell
+du -h --max-depth=1 | sort -hr
+
+Typical output:
+
+Plain Text
+2.5G venv
+120M .git
+90M helm-chart
+20M agents
+If You Need Files Larger Than 100 MB
+
+Use Git LFS (Large File Storage):
+
+Install:
+
+Shell
+sudo apt install git-lfs
+
+Initialize:
+
+Shell
+git lfs install
+
+Track files:
+
+Shell
+git lfs track "*.bin"
+git lfs track "*.safetensors"
+git lfs track "*.gguf"
+
+Commit:
+
+Shell
+git add .gitattributes
+git commit -m "Enable Git LFS"
+
+Commonly used for:
+
+Plain Text
+Llama models
+LoRA adapters
+ML datasets
+Model checkpoints
+For Your AI SRE Project
+
+The GitHub repository should mainly contain:
+
+Plain Text
+Dockerfile
+requirements.txt
+main.py
+agents/
+memory/
+workflows/
+k8s/
+helm-chart/
+README.md
+.gitignore
+
+Ideal repository size:
+
+Plain Text
+10 MB - 100 MB
+
+For ArgoCD, you only need the source code and Kubernetes/Helm manifests, not virtual environments, Minikube binaries, or downloaded AI models.
+
+Check What Is Making Your Repo Large
+
+Run:
+
+Shell
+du -h --max-depth=1 | sort -hr
+
+and
+
+Shell
+find . -type f -size +50M
+
+Those two commands will immediately show which files/folders are causing the large push size.
