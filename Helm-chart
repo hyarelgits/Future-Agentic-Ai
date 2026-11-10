@@ -1,0 +1,255 @@
+HELM CHART CONFIGURATION GUIDE
+=============================
+
+OVERVIEW
+--------
+This guide documents the Helm chart configuration used for the AI SRE Copilot project.
+
+PROJECT STRUCTURE
+-----------------
+future-ai-sre-copilot/
+|
++-- helm-chart/
+    |
+    +-- sre-copilot/
+        |
+        +-- Chart.yaml
+        +-- values.yaml
+        +-- charts/
+        +-- templates/
+            |
+            +-- deployment.yaml
+            +-- service.yaml
+            +-- ingress.yaml
+            +-- serviceaccount.yaml
+
+
+STEP 1 - VERIFY CHART STRUCTURE
+-------------------------------
+
+# list chart contents
+ls -la helm-chart/sre-copilot
+
+Expected:
+
+Chart.yaml
+values.yaml
+templates/
+charts/
+
+
+STEP 2 - CHART.YAML
+-------------------
+
+apiVersion: v2
+name: sre-copilot
+description: AI SRE Copilot Helm Chart
+type: application
+version: 0.1.0
+appVersion: "1.0"
+
+Explanation:
+
+apiVersion  = Helm chart API version
+name        = Chart name
+description = Chart description
+version     = Chart version
+appVersion  = Application version
+
+
+STEP 3 - VALUES.YAML
+--------------------
+
+replicaCount: 1
+
+image:
+  repository: hyareldocker1/sre-copilot
+  pullPolicy: IfNotPresent
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 8002
+
+Explanation:
+
+replicaCount = Number of pods
+repository   = Docker Hub image
+pullPolicy   = Image pull strategy
+tag          = Image version
+port         = Application port
+
+
+STEP 4 - DEPLOYMENT TEMPLATE
+----------------------------
+
+# deployment name
+metadata:
+  name: sre-copilot
+
+# pod replicas
+replicas: 1
+
+# docker image
+image: hyareldocker1/sre-copilot:latest
+
+# application port
+containerPort: 8002
+
+Explanation:
+
+Deployment manages pods.
+containerPort must match FastAPI port.
+
+
+STEP 5 - SERVICE TEMPLATE
+-------------------------
+
+apiVersion: v1
+kind: Service
+
+spec:
+  type: ClusterIP
+
+  ports:
+  - port: 8002
+    targetPort: 8002
+
+Explanation:
+
+port       = service port
+targetPort = application port
+
+
+STEP 6 - VALIDATE CHART
+-----------------------
+
+# validate helm chart
+helm lint ./helm-chart/sre-copilot
+
+Expected:
+
+1 chart(s) linted
+0 chart(s) failed
+
+
+STEP 7 - INSTALL CHART
+----------------------
+
+# install helm chart
+helm install sre-copilot ./helm-chart/sre-copilot
+
+Expected:
+
+STATUS: deployed
+
+
+STEP 8 - VERIFY INSTALLATION
+----------------------------
+
+# list releases
+helm list
+
+# check resources
+kubectl get all
+
+# check pods
+kubectl get pods
+
+
+STEP 9 - CHECK RELEASE STATUS
+-----------------------------
+
+helm status sre-copilot
+
+Shows:
+
+Deployment
+Pods
+Services
+Release Info
+
+
+STEP 10 - UPGRADE CHART
+-----------------------
+
+# apply chart changes
+helm upgrade sre-copilot ./helm-chart/sre-copilot
+
+Purpose:
+Update deployment without uninstalling.
+
+
+STEP 11 - ROLLBACK RELEASE
+--------------------------
+
+# show release history
+helm history sre-copilot
+
+# rollback version
+helm rollback sre-copilot 1
+
+Purpose:
+Return to previous working version.
+
+
+STEP 12 - UNINSTALL CHART
+-------------------------
+
+helm uninstall sre-copilot
+
+Purpose:
+Remove deployment and Helm release.
+
+
+USEFUL COMMANDS
+---------------
+
+# release list
+helm list
+
+# release details
+helm status sre-copilot
+
+# release history
+helm history sre-copilot
+
+# validate chart
+helm lint ./helm-chart/sre-copilot
+
+# install chart
+helm install sre-copilot ./helm-chart/sre-copilot
+
+# upgrade chart
+helm upgrade sre-copilot ./helm-chart/sre-copilot
+
+# uninstall chart
+helm uninstall sre-copilot
+
+
+HELM WORKFLOW
+-------------
+
+Docker Build
+      |
+Docker Hub
+      |
+Helm Chart
+      |
+Helm Install
+      |
+Kubernetes Deployment
+      |
+Pod Running
+
+
+MEMORY FORMULA
+--------------
+Chart.yaml     = Chart Information
+values.yaml    = User Configuration
+templates      = Kubernetes Templates
+helm lint      = Validate Chart
+helm install   = Install Release
+helm upgrade   = Upgrade Release
+helm rollback  = Restore Release
+helm uninstall = Remove Release
