@@ -1,0 +1,205 @@
+LANGFUSE + POSTGRESQL CONNECTION GUIDE
+=====================================
+
+OVERVIEW
+--------
+This guide explains how to connect Langfuse with PostgreSQL using Docker.
+
+ARCHITECTURE
+------------
+
+Langfuse
+    |
+    v
+PostgreSQL
+
+Langfuse stores traces, prompts, observations, scores, and metadata in PostgreSQL.
+
+
+ISSUE
+-----
+
+Error:
+
+Required database environment variables are not set.
+Provide a postgres url for DATABASE_URL.
+
+Meaning:
+
+Langfuse requires a PostgreSQL database connection.
+
+
+STEP 1 - CREATE DOCKER NETWORK
+------------------------------
+
+# create dedicated network
+
+docker network create langfuse-net
+
+Verify:
+
+docker network ls
+
+
+STEP 2 - START POSTGRESQL
+-------------------------
+
+# start postgres container
+
+docker run -d --name postgres --network langfuse-net -e POSTGRES_USER=langfuse -e POSTGRES_PASSWORD=langfuse123 -e POSTGRES_DB=langfuse -p 5432:5432 postgres:16
+
+Verify:
+
+docker ps
+
+Expected:
+
+postgres    Up
+
+
+STEP 3 - VERIFY POSTGRESQL
+--------------------------
+
+# check postgres logs
+
+docker logs postgres
+
+Expected:
+
+database system is ready to accept connections
+
+
+STEP 4 - UNDERSTAND DATABASE_URL
+--------------------------------
+
+DATABASE_URL Format:
+
+postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+
+Example:
+
+postgresql://langfuse:langfuse123@postgres:5432/langfuse
+
+Explanation:
+
+langfuse       = username
+langfuse123    = password
+postgres       = docker container name
+5432           = postgres port
+langfuse       = database name
+
+
+STEP 5 - REMOVE FAILED LANGFUSE CONTAINER
+-----------------------------------------
+
+docker rm -f langfuse
+
+
+STEP 6 - START LANGFUSE WITH DATABASE_URL
+-----------------------------------------
+
+# start langfuse container
+
+docker run -d --name langfuse --network langfuse-net -p 3000:3000 -e DATABASE_URL="postgresql://langfuse:langfuse123@postgres:5432/langfuse" langfuse/langfuse
+
+
+STEP 7 - CHECK LOGS
+-------------------
+
+# view logs
+
+docker logs langfuse
+
+If DATABASE_URL is correct, the previous error disappears.
+
+
+COMMON ERRORS
+-------------
+
+Error:
+Connection refused
+
+Cause:
+PostgreSQL container not running.
+
+Fix:
+
+docker ps
+
+Start PostgreSQL.
+
+
+Error:
+DATABASE_URL missing
+
+Cause:
+Environment variable not supplied.
+
+Fix:
+
+-e DATABASE_URL="postgresql://langfuse:langfuse123@postgres:5432/langfuse"
+
+
+Error:
+Authentication failed
+
+Cause:
+Wrong username or password.
+
+Fix:
+Verify POSTGRES_USER and POSTGRES_PASSWORD values.
+
+
+VERIFICATION COMMANDS
+---------------------
+
+# list containers
+
+docker ps
+
+# show postgres logs
+
+docker logs postgres
+
+# show langfuse logs
+
+docker logs langfuse
+
+# list networks
+
+docker network ls
+
+# inspect network
+
+docker network inspect langfuse-net
+
+
+ACCESS LANGFUSE
+---------------
+
+Open Browser:
+
+http://localhost:3000
+
+Or:
+
+http://<ubuntu-ip>:3000
+
+Find IP:
+
+hostname -I
+
+
+MEMORY FORMULA
+--------------
+Create Network
+      ↓
+Start PostgreSQL
+      ↓
+Configure DATABASE_URL
+      ↓
+Start Langfuse
+      ↓
+Verify Logs
+      ↓
+Open UI On Port 3000
