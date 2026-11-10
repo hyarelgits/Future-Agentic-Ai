@@ -1,0 +1,194 @@
+DOCKER HUB IMAGE UPLOAD GUIDE
+============================
+
+PURPOSE
+-------
+Upload a local Docker image to Docker Hub and use it from Kubernetes.
+
+IMAGE DETAILS
+-------------
+Local Image:
+
+sre-copilot:latest
+
+Example Docker Hub Repository:
+
+hyareldocker1/sre-copilot:latest
+
+
+STEP 1 - VERIFY DOCKER IMAGE
+----------------------------
+
+# list docker images
+docker images
+
+Expected:
+
+REPOSITORY      TAG
+sre-copilot     latest
+
+
+STEP 2 - LOGIN TO DOCKER HUB
+----------------------------
+
+# login to docker hub
+docker login
+
+OR
+
+# login with username
+docker login -u hyareldocker1
+
+Recommendation:
+Use a Docker Hub Personal Access Token (PAT)
+instead of your password.
+
+
+STEP 3 - CREATE DOCKER HUB REPOSITORY
+-------------------------------------
+
+Login:
+https://hub.docker.com
+
+Create Repository:
+
+sre-copilot
+
+Repository Name Example:
+
+hyareldocker1/sre-copilot
+
+
+STEP 4 - TAG LOCAL IMAGE
+------------------------
+
+# tag local image for Docker Hub
+docker tag sre-copilot:latest hyareldocker1/sre-copilot:latest
+
+Verify:
+
+docker images
+
+Expected:
+
+sre-copilot                    latest
+hyareldocker1/sre-copilot      latest
+
+
+STEP 5 - PUSH IMAGE
+-------------------
+
+# upload image to Docker Hub
+docker push hyareldocker1/sre-copilot:latest
+
+Note:
+Large images may take several minutes to upload.
+
+
+STEP 6 - VERIFY IMAGE
+---------------------
+
+Open:
+
+https://hub.docker.com/r/hyareldocker1/sre-copilot
+
+Verify:
+
+latest tag exists.
+
+
+STEP 7 - KUBERNETES DEPLOYMENT
+------------------------------
+
+Update deployment.yaml
+
+Old:
+
+image: sre-copilot:latest
+
+New:
+
+image: hyareldocker1/sre-copilot:latest
+
+Apply Deployment:
+
+kubectl apply -f deployment.yaml
+
+Restart Deployment:
+
+kubectl rollout restart deployment sre-copilot
+
+
+STEP 8 - VERIFY PODS
+--------------------
+
+kubectl get pods
+
+Expected:
+
+STATUS
+Running
+
+
+TROUBLESHOOTING
+---------------
+
+Problem:
+ErrImagePull
+
+Cause:
+Image not available in Docker Hub.
+
+Fix:
+Verify image exists in repository.
+
+
+Problem:
+ImagePullBackOff
+
+Cause:
+Incorrect image name or tag.
+
+Fix:
+Check deployment.yaml image value.
+
+
+USEFUL COMMANDS
+---------------
+
+# list local images
+docker images
+
+# login
+docker login
+
+# tag image
+docker tag sre-copilot:latest hyareldocker1/sre-copilot:latest
+
+# upload image
+docker push hyareldocker1/sre-copilot:latest
+
+# verify deployment
+kubectl get deployments
+
+# verify pods
+kubectl get pods
+
+# pod details
+kubectl describe pod POD_NAME
+
+MEMORY FORMULA
+--------------
+Build Image
+    ↓
+Tag Image
+    ↓
+Docker Login
+    ↓
+Docker Push
+    ↓
+Update deployment.yaml
+    ↓
+kubectl apply
+    ↓
+Pod Running
