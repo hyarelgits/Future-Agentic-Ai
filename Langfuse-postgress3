@@ -1,0 +1,176 @@
+For your setup, don't run just the langfuse/langfuse container anymore. Langfuse v3 needs:
+
+Plain Text
+Langfuse
+↓
+PostgreSQL
+↓
+ClickHouse
+
+The simplest way is Docker Compose.
+
+Step 1: Create a folder
+Shell
+mkdir ~/langfuse-stack
+ 
+cd ~/langfuse-stack
+Step 2: Create docker-compose.yml
+Shell
+nano docker-compose.yml
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse123
+      POSTGRES_DB: langfuse
+
+    ports:
+      - "5432:5432"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    container_name: clickhouse
+    restart: unless-stopped
+
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+
+  langfuse:
+    image: langfuse/langfuse
+    container_name: langfuse
+
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+      - clickhouse
+
+    ports:
+      - "3000:3000"
+
+    environment:
+
+      DATABASE_URL: postgresql://langfuse:langfuse123@postgres:5432/langfuse
+
+      CLICKHOUSE_URL: http://clickhouse:8123
+
+=============
+
+CLICKHOUSE_URL: http://clickhouse:8123
+
+Save:
+
+Plain Text
+CTRL + O
+ENTER
+CTRL + X
+Step 3: Start All Containers
+Shell
+docker compose up -d
+
+Docker will pull:
+
+Plain Text
+postgres:16
+clickhouse/clickhouse-server
+langfuse/langfuse
+Step 4: Verify
+Shell
+docker ps
+
+Expected:
+
+Plain Text
+postgres Up
+ 
+clickhouse Up
+ 
+langfuse Up
+Step 5: Check Logs
+Shell
+docker logs langfuse
+
+You should no longer see:
+
+Plain Text
+DATABASE_URL is not configured
+
+or
+
+Plain Text
+CLICKHOUSE_URL is not configured
+Step 6: Open Langfuse
+
+Inside Ubuntu:
+
+Plain Text
+http://localhost:3000
+
+From Windows:
+
+Find Ubuntu IP:
+
+Shell
+hostname -I
+ 
+
+Example:
+
+Plain Text
+192.168.1.100
+
+Open:
+
+Plain Text
+http://192.168.1.100:3000
+If Existing Containers Exist
+
+Remove old ones first:
+
+Shell
+docker rm -f langfuse
+ 
+docker rm -f postgres
+
+Then run:
+
+Shell
+docker compose up -d
+ 
+Verify Architecture
+Plain Text
+Langfuse
+↓
+PostgreSQL
+↓
+ClickHouse
+
+Once all three containers show Up, the next phase in your roadmap is:
+
+Plain Text
+Langfuse
+↓
+DeepEval
+↓
+RAGAS
+↓
+OpenTelemetry
+↓
+Grafana
+
+and you'll be able to add tracing code in:
+
+Plain Text
+agents/investigator_agent.py
+agents/planner_agent.py
+agents/executor_agent.py
+
+and view traces in the Langfuse UI.
+
