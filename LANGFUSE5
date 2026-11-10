@@ -1,0 +1,77 @@
+Great progress. ✅ The error has changed again, which means you're fixing the dependencies one by one.
+
+Current Error
+Plain Text
+Error: CLICKHOUSE_PASSWORD is not set.
+Please set CLICKHOUSE_PASSWORD in your environment variables.
+What To Do Now
+
+Open your compose file:
+
+Shell
+cd ~/langfuse-stack
+ 
+nano docker-compose.yml
+
+Find the langfuse environment section and ensure it contains:
+
+environment:
+  DATABASE_URL: postgresql://langfuse:langfuse123@postgres:5432/langfuse
+
+  CLICKHOUSE_URL: http://clickhouse:8123
+
+  CLICKHOUSE_MIGRATION_URL: clickhouse://clickhouse:9000
+
+  CLICKHOUSE_USER: default
+
+  CLICKHOUSE_PASSWORD: ""
+
+  CLICKHOUSE_DB: default
+
+
+======
+
+
+If the empty password doesn't work, use:
+
+YAML
+CLICKHOUSE_PASSWORD: default
+
+and configure ClickHouse to use the same password.
+
+Restart Stack
+Shell
+docker-compose down
+
+Then:
+
+Shell
+docker-compose up -d
+Check Logs Again
+Shell
+docker logs langfuse
+ 
+
+or
+
+Shell
+docker-compose logs langfuse
+Better Option (Recommended)
+
+You're manually discovering every required variable for the latest Langfuse release.
+
+Run:
+
+Shell
+cat docker-compose.yml
+
+and inspect the current compose file you're using. The latest Langfuse versions require several ClickHouse-related settings, and if the compose file is incomplete we should correct it completely rather than fixing one missing variable at a time.
+
+Next Commands
+
+Run these and paste the output:
+
+Shell
+cat docker-compose.yml
+Shell
+docker ps -a
