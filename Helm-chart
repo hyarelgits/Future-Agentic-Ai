@@ -253,3 +253,88 @@ helm install   = Install Release
 helm upgrade   = Upgrade Release
 helm rollback  = Restore Release
 helm uninstall = Remove Release
+
+
+Roll Back to a Previous Revision
+
+Rollback to revision 1:
+
+Shell
+helm rollback sre-copilot 1
+
+Rollback to revision 2:
+
+Shell
+helm rollback sre-copilot 2
+
+Syntax:
+
+Shell
+helm rollback <release-name> <revision-number>
+
+Example:
+
+Shell
+helm rollback sre-copilot 1
+3. Verify Rollback
+Shell
+helm status sre-copilot
+ 
+
+or
+
+Shell
+helm history sre-copilot
+4. Verify Kubernetes Resources
+Shell
+kubectl get pods
+Shell
+kubectl get deployments
+Useful Helm Commands
+Shell
+# List releases
+helm list
+ 
+# Show release history
+helm history sre-copilot
+ 
+# Rollback
+helm rollback sre-copilot 1
+ 
+# Release status
+helm status sre-copilot
+ 
+# Upgrade release
+helm upgrade sre-copilot ./helm-chart/sre-copilot
+ 
+# Uninstall release
+helm uninstall sre-copilot
+Helm Lifecycle
+Plain Text
+helm install
+↓
+Revision 1
+↓
+helm upgrade
+↓
+Revision 2
+↓
+helm upgrade
+↓
+Revision 3
+↓
+Problem Found
+↓
+helm rollback sre-copilot 1
+↓
+Back To Revision 1
+Check Your Current Revision
+
+Run:
+
+Shell
+helm history sre-copilot
+
+This will show all available revisions that you can roll back to.
+
+
