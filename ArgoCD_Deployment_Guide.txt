@@ -1,0 +1,322 @@
+ARGOCD DEPLOYMENT GUIDE
+=======================
+
+OVERVIEW
+--------
+ArgoCD is a GitOps Continuous Delivery tool for Kubernetes.
+
+Workflow:
+
+Code Change
+    ↓
+Git Push
+    ↓
+GitHub Repository
+    ↓
+ArgoCD Detects Change
+    ↓
+Helm Chart
+    ↓
+Kubernetes Deployment
+    ↓
+Running Pods
+
+
+PHASE 1 - PREREQUISITES
+-----------------------
+
+Completed Components:
+
+- Docker
+- Docker Hub
+- Kubernetes
+- Minikube
+- Helm
+- GitHub Repository
+
+Example Repository:
+
+https://github.com/hyarelgits/Future-Agentic-Ai
+
+
+PHASE 2 - CREATE ARGOCD NAMESPACE
+---------------------------------
+
+# create argocd namespace
+kubectl create namespace argocd
+
+Verify:
+
+kubectl get ns
+
+Expected:
+
+argocd
+default
+kube-system
+
+
+PHASE 3 - INSTALL ARGOCD
+------------------------
+
+# install argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+Purpose:
+
+Install:
+- argocd-server
+- argocd-repo-server
+- argocd-application-controller
+- argocd-dex-server
+
+
+PHASE 4 - VERIFY INSTALLATION
+-----------------------------
+
+# check pods
+kubectl get pods -n argocd
+
+Expected:
+
+argocd-server
+argocd-repo-server
+argocd-application-controller
+
+Status:
+
+Running
+
+
+PHASE 5 - ACCESS WEB UI
+-----------------------
+
+# check services
+kubectl get svc -n argocd
+
+# port forward service
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+Open Browser:
+
+https://localhost:8080
+
+
+PHASE 6 - GET ADMIN PASSWORD
+----------------------------
+
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
+
+Login:
+
+Username:
+admin
+
+Password:
+Generated Password
+
+
+PHASE 7 - CREATE APPLICATION FILE
+---------------------------------
+
+Create:
+
+argocd-app.yaml
+
+
+APPLICATION YAML
+----------------
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: sre-copilot
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/hyarelgits/Future-Agentic-Ai
+    targetRevision: main
+    path: helm-chart/sre-copilot
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+
+FIELD EXPLANATION
+-----------------
+
+repoURL        = GitHub repository
+path           = Helm chart location
+targetRevision = Branch name
+namespace      = Deployment namespace
+prune          = Delete unused resources
+selfHeal       = Auto-correct manual changes
+
+
+PHASE 8 - DEPLOY APPLICATION
+----------------------------
+
+kubectl apply -f argocd-app.yaml
+
+Verify:
+
+kubectl get applications -n argocd
+
+
+PHASE 9 - VERIFY SYNC
+---------------------
+
+Open ArgoCD UI.
+
+Expected:
+
+Application:
+sre-copilot
+
+Status:
+Healthy
+Synced
+
+
+PHASE 10 - AUTOMATIC DEPLOYMENT
+--------------------------------
+
+Developer Changes Code
+         ↓
+Git Add
+         ↓
+Git Commit
+         ↓
+Git Push
+         ↓
+GitHub
+         ↓
+ArgoCD Detects Change
+         ↓
+Helm Deploys Change
+         ↓
+Pods Updated
+
+
+PHASE 11 - TEST GITOPS
+----------------------
+
+Example:
+
+Change:
+
+replicaCount: 1
+
+To:
+
+replicaCount: 2
+
+Commit:
+
+git add .
+git commit -m "Scale Application"
+git push origin main
+
+ArgoCD automatically deploys changes.
+
+
+PHASE 12 - SELF HEALING
+-----------------------
+
+Manual Change:
+
+kubectl scale deployment sre-copilot --replicas=5
+
+GitHub State:
+
+replicas: 2
+
+ArgoCD detects mismatch.
+
+Result:
+
+Restores deployment back to 2 replicas.
+
+
+PHASE 13 - HELM + ARGOCD
+------------------------
+
+GitHub
+   ↓
+ArgoCD
+   ↓
+Helm Chart
+   ↓
+Kubernetes
+   ↓
+Pods
+
+
+PHASE 14 - ROLLBACK
+-------------------
+
+ArgoCD CLI:
+
+argocd app history sre-copilot
+
+Rollback:
+
+argocd app rollback sre-copilot 1
+
+
+USEFUL COMMANDS
+---------------
+
+kubectl create namespace argocd
+
+kubectl get pods -n argocd
+
+kubectl get svc -n argocd
+
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+kubectl apply -f argocd-app.yaml
+
+kubectl get applications -n argocd
+
+
+ARCHITECTURE
+------------
+
+GitHub
+   ↓
+ArgoCD
+   ↓
+Helm
+   ↓
+Kubernetes
+   ↓
+Deployment
+   ↓
+Pods
+
+
+MEMORY FORMULA
+--------------
+Code Change
+     ↓
+Git Push
+     ↓
+GitHub
+     ↓
+ArgoCD
+     ↓
+Helm
+     ↓
+Kubernetes
+     ↓
+Running Pods
