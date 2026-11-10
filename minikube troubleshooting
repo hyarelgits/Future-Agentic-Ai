@@ -1,0 +1,241 @@
+MINIKUBE TROUBLESHOOTING GUIDE
+=============================
+
+OVERVIEW
+--------
+This guide covers common Minikube installation and startup issues encountered while building the AI SRE Copilot project.
+
+ISSUE #1 - kubectl get nodes
+Connection Refused
+
+Error:
+The connection to the server localhost:8080 was refused.
+
+Cause:
+- kubectl installed
+- Kubernetes cluster not started
+
+Fix:
+minikube start --driver=docker
+
+Verify:
+kubectl cluster-info
+kubectl get nodes
+
+Expected:
+NAME       STATUS
+minikube   Ready
+
+
+ISSUE #2 - Docker Driver Should Not Be Used With Root
+
+Error:
+DRV_AS_ROOT
+The docker driver should not be used with root privileges.
+
+Cause:
+Running Minikube as root.
+
+Fix Option 1:
+Use normal Linux user.
+
+Fix Option 2:
+minikube start --driver=docker --force
+
+Alternative:
+minikube start --driver=none
+
+
+ISSUE #3 - API Server Connection Refused
+
+Error:
+Get https://192.168.49.2:8443
+connection refused
+
+Cause:
+Minikube cluster stopped.
+
+Check:
+minikube status
+
+Fix:
+minikube start --driver=docker --force
+
+Verify:
+kubectl cluster-info
+
+
+ISSUE #4 - Driver Not Supported
+
+Error:
+DRV_UNSUPPORTED_OS
+The driver '' is not supported on linux/amd64
+
+Cause:
+Corrupted Minikube profile.
+
+Fix:
+minikube delete --all --purge
+
+Restart:
+minikube start --driver=docker --force
+
+
+ISSUE #5 - Node Not Ready
+
+Check:
+kubectl get nodes
+
+Output:
+NotReady
+
+Fix:
+minikube status
+systemctl status docker
+
+Restart:
+minikube stop
+minikube start --driver=docker --force
+
+
+ISSUE #6 - ErrImagePull
+
+Error:
+ErrImagePull
+ImagePullBackOff
+
+Cause:
+Kubernetes cannot find Docker image.
+
+Check:
+docker images
+
+Expected:
+sre-copilot   latest
+
+Load image:
+minikube image load sre-copilot:latest
+
+Restart deployment:
+kubectl rollout restart deployment sre-copilot
+
+
+ISSUE #7 - ImagePullBackOff
+
+Error:
+ImagePullBackOff
+
+Cause:
+Image missing inside Minikube.
+
+Fix:
+minikube image load sre-copilot:latest
+
+Verify:
+minikube image ls | grep sre-copilot
+
+
+ISSUE #8 - Failed To Pull Image
+
+Error:
+pull access denied
+repository does not exist
+
+Cause:
+Kubernetes trying to pull image from Docker Hub.
+
+Fix:
+Build image locally:
+
+docker build -t sre-copilot:latest .
+
+Load image:
+minikube image load sre-copilot:latest
+
+
+ISSUE #9 - Minikube Not Starting
+
+Check Docker:
+docker ps
+
+Check Service:
+systemctl status docker
+
+Start Docker:
+systemctl start docker
+
+Retry:
+minikube start --driver=docker
+
+
+ISSUE #10 - Verify Complete Cluster
+
+Commands:
+minikube status
+kubectl cluster-info
+kubectl get nodes
+kubectl get pods -A
+
+Expected:
+host: Running
+kubelet: Running
+apiserver: Running
+
+Node:
+minikube Ready
+
+
+DEPLOYMENT CHECKLIST
+--------------------
+1. Docker Installed
+2. Docker Running
+3. kubectl Installed
+4. Minikube Installed
+5. Minikube Started
+6. kubectl get nodes = Ready
+7. Docker Image Built
+8. Image Loaded Into Minikube
+9. deployment.yaml Applied
+10. service.yaml Applied
+
+
+IMPORTANT COMMANDS
+------------------
+
+# start minikube
+minikube start --driver=docker
+
+# cluster information
+kubectl cluster-info
+
+# check nodes
+kubectl get nodes
+
+# check pods
+kubectl get pods -A
+
+# check services
+kubectl get svc
+
+# load image into minikube
+minikube image load sre-copilot:latest
+
+# restart deployment
+kubectl rollout restart deployment sre-copilot
+
+# monitor pods
+kubectl get pods -w
+
+MEMORY FORMULA
+--------------
+Docker Running
+      ↓
+Minikube Running
+      ↓
+Node Ready
+      ↓
+Image Available
+      ↓
+Deployment Running
+      ↓
+Service Accessible
