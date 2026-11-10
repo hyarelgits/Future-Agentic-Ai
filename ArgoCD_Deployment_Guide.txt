@@ -127,30 +127,6 @@ argocd-app.yaml
 APPLICATION YAML
 ----------------
 
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-
-metadata:
-  name: sre-copilot
-
-spec:
-  project: default
-
-  source:
-    repoURL: https://github.com/hyarelgits/Future-Agentic-Ai
-    targetRevision: main
-    path: helm-chart/sre-copilot
-
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: default
-
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-
-
 FIELD EXPLANATION
 -----------------
 
@@ -164,6 +140,46 @@ selfHeal       = Auto-correct manual changes
 
 PHASE 8 - DEPLOY APPLICATION
 ----------------------------
+Edit your argocd-app.yaml and add:
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: sre-copilot
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/hyarelgits/Future-Agentic-Ai
+    targetRevision: master
+    path: helm-chart/sre-copilot
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+
+---------------
+If it exists in default namespace:
+
+Shell
+kubectl delete application sre-copilot
+
+or:
+
+Shell
+kubectl delete application sre-copilot -n default
+
+-----------
+
 
 kubectl apply -f argocd-app.yaml
 
