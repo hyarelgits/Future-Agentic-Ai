@@ -1,0 +1,118 @@
+Now we have the next root cause. ✅
+
+Your Langfuse log says:
+
+Plain Text
+Error:
+CLICKHOUSE_URL is not configured.
+
+This means:
+
+Plain Text
+PostgreSQL ✅ Configured
+DATABASE_URL ✅ Working
+ClickHouse ❌ Missing
+Why It Happens
+
+Newer versions of Langfuse v3 require:
+
+Plain Text
+PostgreSQL
++
+ClickHouse
+
+Architecture:
+
+Plain Text
+Langfuse
+├── PostgreSQL
+└── ClickHouse
+Recommended Solution
+
+Instead of running individual containers, use the official Docker Compose setup.
+
+Create Folder
+Shell
+mkdir langfuse
+ 
+cd langfuse
+ 
+Download Official Compose
+Shell
+wget https://github.com/langfuse/langfuse/releases/latest/download/docker-compose.yml
+
+or create your own compose file.
+
+Start Stack
+Shell
+docker compose up -d
+ 
+
+This automatically starts:
+
+Plain Text
+Langfuse
+PostgreSQL
+ClickHouse
+Redis
+Verify
+Shell
+docker ps
+
+Expected:
+
+Plain Text
+langfuse
+postgres
+clickhouse
+redis
+
+All should be:
+
+Plain Text
+Up
+Open UI
+Plain Text
+http://localhost:3000
+Why Your Current Container Fails
+
+Current state:
+
+Plain Text
+PostgreSQL ✅
+DATABASE_URL ✅
+ClickHouse ❌ Missing
+
+Log confirms:
+
+Plain Text
+CLICKHOUSE_URL is not configured
+
+So even though PostgreSQL is running correctly, Langfuse cannot start until ClickHouse is also configured.
+
+Quick Learning Note
+Langfuse v2
+Plain Text
+PostgreSQL
+ 
+Langfuse v3
+Plain Text
+PostgreSQL
++
+ClickHouse
+
+That's why the startup error changed from:
+
+Plain Text
+DATABASE_URL missing
+
+to:
+
+Plain Text
+CLICKHOUSE_URL missing
+
+You fixed the first issue, and now Langfuse is asking for the second required dependency. The easiest path is to use the official Docker Compose deployment instead of manually creating each container.
+
+create txt for langfuse-postgres connection
+Reasoned for 1s
+Coding and executing
