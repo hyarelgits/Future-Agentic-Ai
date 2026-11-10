@@ -1,0 +1,288 @@
+GIT & GITHUB UPLOAD TROUBLESHOOTING GUIDE
+========================================
+
+OVERVIEW
+--------
+This guide covers common Git and GitHub upload issues encountered while pushing the AI SRE Copilot project.
+
+ISSUE #1 - Password Authentication Failed
+-----------------------------------------
+
+Error:
+remote: Invalid username or token.
+Password authentication is not supported for Git operations.
+
+Cause:
+GitHub no longer supports account passwords for Git push operations.
+
+Fix:
+1. Login to GitHub.
+2. Open Settings.
+3. Open Developer Settings.
+4. Open Personal Access Tokens.
+5. Create a token.
+6. Use the token instead of the GitHub password.
+
+Commands:
+
+git push -u origin main
+
+Username:
+your-github-username
+
+Password:
+Paste Personal Access Token
+
+
+ISSUE #2 - Repository Too Large
+-------------------------------
+
+Error:
+RPC failed
+HTTP 408
+remote end hung up unexpectedly
+
+Cause:
+Repository contains unnecessary files.
+
+Examples:
+venv/
+minikube binaries
+logs
+cached files
+
+Check size:
+
+du -sh .
+
+Check folders:
+
+du -h --max-depth=1 | sort -hr
+
+
+ISSUE #3 - File Exceeds 100 MB Limit
+------------------------------------
+
+Error:
+GH001 Large files detected
+
+Examples:
+
+minikube-linux-amd64
+_lancedb.abi3.so
+libarrow.so
+
+GitHub Limit:
+
+50 MB  = Warning
+100 MB = Rejected
+
+Find large files:
+
+find . -type f -size +50M
+
+find . -type f -size +100M
+
+
+ISSUE #4 - Virtual Environment Committed
+-----------------------------------------
+
+Symptoms:
+
+Huge repository
+Slow push
+GitHub rejection
+
+Cause:
+venv folder included.
+
+Fix:
+
+git rm -r --cached venv
+
+Add to .gitignore:
+
+venv/
+
+
+ISSUE #5 - Minikube Binary Committed
+------------------------------------
+
+Cause:
+minikube-linux-amd64 committed.
+
+Fix:
+
+git rm --cached minikube-linux-amd64
+
+Add to .gitignore:
+
+minikube-linux-amd64
+
+
+ISSUE #6 - .gitignore Missing
+-----------------------------
+
+Error:
+pathspec '.gitignore' did not match any files
+
+Cause:
+File not created.
+
+Fix:
+
+nano .gitignore
+
+Example:
+
+venv/
+__pycache__/
+*.pyc
+.minikube/
+.kube/
+minikube-linux-amd64
+.env
+*.log
+*.zip
+*.tar
+*.tar.gz
+.vscode/
+.idea/
+
+
+ISSUE #7 - Large Files Already In Git History
+---------------------------------------------
+
+Symptoms:
+Files removed but push still fails.
+
+Cause:
+Large files remain in Git history.
+
+Quick Fix:
+
+rm -rf .git
+
+git init
+
+git branch -M main
+
+Create .gitignore
+
+git add .
+
+git commit -m "Initial Commit"
+
+
+ISSUE #8 - Verify Ignored Files
+--------------------------------
+
+Check tracked venv files:
+
+git ls-files | grep venv
+
+Check tracked minikube files:
+
+git ls-files | grep minikube
+
+Expected:
+No output
+
+
+ISSUE #9 - Remote Repository Configuration
+------------------------------------------
+
+Check remote:
+
+git remote -v
+
+Add remote:
+
+git remote add origin https://github.com/USERNAME/REPOSITORY.git
+
+
+ISSUE #10 - Push Project Successfully
+-------------------------------------
+
+Initialize:
+
+git init
+
+git branch -M main
+
+Add files:
+
+git add .
+
+Commit:
+
+git commit -m "Initial Commit"
+
+Add remote:
+
+git remote add origin https://github.com/USERNAME/REPOSITORY.git
+
+Push:
+
+git push -u origin main
+
+
+RECOMMENDED PROJECT CONTENT
+---------------------------
+
+Upload:
+
+agents/
+frontend/
+memory/
+workflows/
+k8s/
+helm-chart/
+
+main.py
+Dockerfile
+requirements.txt
+README.md
+.gitignore
+
+
+DO NOT UPLOAD
+-------------
+
+venv/
+__pycache__/
+.minikube/
+.kube/
+minikube-linux-amd64
+*.log
+*.tar
+*.zip
+*.vmdk
+AI model files
+
+
+CHECKLIST
+----------
+
+[ ] Created .gitignore
+[ ] Removed venv from Git
+[ ] Removed minikube binary from Git
+[ ] Created PAT token
+[ ] Verified remote URL
+[ ] Committed code
+[ ] Successfully pushed to GitHub
+
+
+MEMORY FORMULA
+--------------
+Create .gitignore
+      ↓
+Remove Large Files
+      ↓
+Commit Changes
+      ↓
+Configure Remote
+      ↓
+Use PAT Token
+      ↓
+Push To GitHub
