@@ -1,0 +1,129 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse123
+      POSTGRES_DB: langfuse
+
+    ports:
+      - "5432:5432"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    container_name: clickhouse
+
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: default
+      CLICKHOUSE_DB: default
+
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+
+  langfuse:
+    image: langfuse/langfuse
+    container_name: langfuse
+
+    depends_on:
+      - postgres
+      - clickhouse
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse123@postgres:5432/langfuse
+
+      CLICKHOUSE_URL: http://clickhouse:8123
+
+      CLICKHOUSE_MIGRATION_URL: clickhouse://default:default@clickhouse:9000
+
+      CLICKHOUSE_USER: default
+
+      CLICKHOUSE_PASSWORD: default
+
+      CLICKHOUSE_DB: default
+
+
+
+
+        ========
+
+
+3. Start Everything
+Shell
+docker-compose up -d
+4. Verify ClickHouse Login
+Shell
+docker exec -it clickhouse clickhouse-client \
+--user default \
+--password default
+
+Expected:
+
+Plain Text
+:)
+
+Then:
+
+SQL
+SHOW DATABASES;
+5. Check Langfuse Logs
+Shell
+docker logs -f langfuse
+
+You want to see:
+
+Plain Text
+No pending migrations
+ 
+Server started
+
+and no:
+
+Plain Text
+Authentication failed
+6. Open Langfuse
+Plain Text
+http://localhost:3000
+
+or
+
+Plain Text
+http://192.168.11.152:3000
+Why I'm recommending a reset
+
+Your ClickHouse user currently exists with:
+
+Plain Text
+auth_type = plaintext_password
+
+but we don't know what password was stored when the volume was first initialized.
+
+When ClickHouse data volumes already exist, changing:
+
+YAML
+CLICKHOUSE_PASSWORD
+
+in compose often does nothing because the old credentials remain in the volume.
+
+That's why the cleanest path is:
+
+Shell
+docker-compose down -v
+docker-compose up -d
+
+with a known password:
+
+Plain Text
+default
+
+for both ClickHouse and Langfuse. This removes all ambiguity and usually resolves the Langfuse startup issue in one pass.
+        
