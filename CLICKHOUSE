@@ -10,6 +10,21 @@ mkdir -p /etc/clickhouse-server/users.d
 
 Create file:
 
+==================
+cat > /etc/clickhouse-server/users.d/default-user.xml <<EOF
+<clickhouse>
+  <users>
+    <default>
+      <password>default</password>
+      <networks>
+        <ip>::/0</ip>
+      </networks>
+      <access_management>1</access_management>
+    </default>
+  </users>
+</clickhouse>
+EOF
+---------------
 Shell
 nano /etc/clickhouse-server/users.d/default-user.xml
 
