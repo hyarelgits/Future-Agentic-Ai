@@ -1,0 +1,107 @@
+Inside ClickHouse container:
+
+Shell
+docker exec -it clickhouse bash
+
+Create configuration directory if needed:
+
+Shell
+mkdir -p /etc/clickhouse-server/users.d
+
+Create file:
+
+Shell
+nano /etc/clickhouse-server/users.d/default-user.xml
+
+
+<clickhouse>
+  <users>
+    <default>
+      <password>default</password>
+
+      <networks>
+        <ip>::/0</ip>
+      </networks>
+
+      <access_management>1</access_management>
+    </default>
+  </users>
+</clickhouse>
+
+
+CTRL+O
+ENTER
+CTRL+X
+Restart ClickHouse
+
+Exit container:
+
+Shell
+exit
+
+Restart:
+
+Shell
+docker restart clickhouse
+Test Login
+Shell
+docker exec -it clickhouse clickhouse-client \
+--user default \
+--password default
+
+Expected:
+
+Plain Text
+:)
+
+Then:
+
+SQL
+SHOW DATABASES;
+Verify Langfuse Settings
+
+Your docker-compose.yml should contain:
+
+YAML
+CLICKHOUSE_USER: default
+ 
+CLICKHOUSE_PASSWORD: default
+ 
+CLICKHOUSE_DB: default
+Recreate Langfuse
+Shell
+docker-compose down
+ 
+docker-compose up -d
+Check Logs
+Shell
+docker logs -f langfuse
+
+Expected:
+
+Plain Text
+No pending migrations
+ 
+Server started
+ 
+Listening on port 3000
+Open UI
+Plain Text
+http://192.168.11.152:3000
+
+or
+
+Plain Text
+http://localhost:3000
+Why This Happened
+
+Your query showed:
+
+Plain Text
+host_names: ['localhost']
+
+So ClickHouse only trusted local connections.
+
+Langfuse connects from a different Docker container, therefore authentication failed even though the username existed.
+
+This is the final major blocker. After allowing network access and setting a matching password (default), Langfuse should start successfully.
